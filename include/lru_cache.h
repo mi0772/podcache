@@ -12,45 +12,46 @@
 #include "hash_table.h"
 
 // nodo hash_table
-typedef struct LRUNode {
+typedef struct lru_node {
     char *key;
     void *value;
     size_t size;
-    struct LRUNode *next;
-    struct LRUNode *prev;
+    struct lru_node *next;
+    struct lru_node *prev;
 
-} LRUNode;
+} lru_node_t;
 
-typedef struct HashNode {
+typedef struct hash_node {
     char *key;
-    LRUNode *node;
-    struct HashNode *next;
-} HashNode;
+    lru_node_t *node;
+    struct hash_node *next;
+} hash_node_t;
 
 // Cache LRU
-typedef struct LRUCache {
-    LRUNode *head;
-    LRUNode *tail;
-    HashNode **buckets;
+typedef struct lru_cache {
+    lru_node_t *head;
+    lru_node_t *tail;
+    hash_node_t **buckets;
     size_t capacity;
     size_t size;
     size_t hash_size;
-} LRUCache;
+} lru_cache_t;
 
 /* ======================================================
  * forward declaration static functions
 *  ====================================================== */
-static LRUNode *create_node(const char *key, size_t value_size, void *value);
-static HashNode *create_hash_node(const char *key, LRUNode *lru_node);
-static void add_to_head(LRUCache *cache, LRUNode *lru_node);
-static void move_to_head(LRUCache *cache, LRUNode *lru_node);
+static lru_node_t *create_node(const char *key, size_t value_size, void *value);
+static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node);
+static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node);
+static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node);
 
 /* ======================================================
  * forward declaration public functions
 *  ====================================================== */
-LRUCache *LRUCache_create(size_t capacity);
-int LRUCache_put(LRUCache *cache, const char *key, void *value, size_t value_size);
-void LRUCache_destroy(LRUCache *cache);
+lru_cache_t *lru_cache_create(size_t capacity);
+int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value_size);
+int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *value_size);
+void lru_cache_destroy(lru_cache_t *cache);
 
 
 #endif //LRU_CACHE_H

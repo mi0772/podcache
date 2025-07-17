@@ -6,17 +6,21 @@
  */
 
 #include "lru_cache.h"
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "cache.h"
+
+#include "clogger.h"
 #include "hash_func.h"
+#include "pod_cache.h"
 
 /* =============================================
  * public functions implementation
  * ============================================= */
-LRUCache *LRUCache_create(size_t capacity) {
-    LRUCache *cache = calloc(1, sizeof(LRUCache));
-    cache->buckets = calloc(capacity * 2, sizeof(HashNode *));
+lru_cache_t *lru_cache_create(size_t capacity) {
+    lru_cache_t *cache = calloc(1, sizeof(lru_cache_t));
+    cache->buckets = calloc(capacity * 2, sizeof(hash_node_t *));
     if (!cache->buckets) {
         free(cache);
         return NULL;
@@ -29,18 +33,42 @@ LRUCache *LRUCache_create(size_t capacity) {
     return cache;
 }
 
-int LRUCache_put(LRUCache *cache, const char *key, void *value, size_t value_size) {
+int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *value_size) {
+    if (!cache) return -1;
+
+    uint32_t hash = hash_key(key, cache->hash_size);
+    hash_node_t *current = cache->buckets[hash];
+    while (current) {
+        if (strcmp(current->key, key) == 0) {
+            // found !
+            *value = malloc(current->node->size);
+            *value_size = current->node->size;
+            memcpy(*value, current->node->value, current->node->size);
+            log_debug("GET: retrieved '%.*s' (size: %zu)", (int)*value_size, (char*)*value, *value_size);
+
+            move_to_head(cache, current);
+            return 0;
+        }
+        current = current->next;
+    }
+    return -1;
+}
+
+int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value_size) {
     if (!cache) return -1;
 
     uint32_t hash = hash_key(key, cache->hash_size);
 
-    HashNode *current = cache->buckets[hash];
+    hash_node_t *current = cache->buckets[hash];
     while (current) {
         if (strcmp(current->key, key) == 0) {
 
             free(current->node->value);
+
             current->node->value = malloc(value_size);
+            current->node->size = value_size;
             memcpy(current->node->value, value, value_size);
+            log_debug("PUT: updating '%.*s' (size: %zu)", (int)value_size, (char*)value, value_size);
 
             // campo aggiornato, va spostato in head
             move_to_head(cache, current->node);
@@ -51,8 +79,8 @@ int LRUCache_put(LRUCache *cache, const char *key, void *value, size_t value_siz
 
     //TODO: Gestire memoria piena
 
-    LRUNode *new_lru_node = create_node(key, value_size, value);
-    HashNode *new_hash_node = create_hash_node(key, new_lru_node);
+    lru_node_t *new_lru_node = create_node(key, value_size, value);
+    hash_node_t *new_hash_node = create_hash_node(key, new_lru_node);
     new_hash_node->next = cache->buckets[hash];
     cache->buckets[hash] = new_hash_node;
     cache->size++;
@@ -60,12 +88,12 @@ int LRUCache_put(LRUCache *cache, const char *key, void *value, size_t value_siz
     return 0;
 }
 
-void LRUCache_destroy(LRUCache *cache) {
+void lru_cache_destroy(lru_cache_t *cache) {
     if (cache == NULL) return;
 
-    LRUNode *current = cache->head;
+    lru_node_t *current = cache->head;
     while (current) {
-        LRUNode *next = current->next;
+        lru_node_t *next = current->next;
         free(current->key);
         free(current->value);
         free(current);
@@ -74,7 +102,7 @@ void LRUCache_destroy(LRUCache *cache) {
 
     for (int i=0 ; i < cache->hash_size ; i++) {
         while (cache->buckets[i]) {
-            HashNode *node = cache->buckets[i]->next;
+            hash_node_t *node = cache->buckets[i]->next;
             free(cache->buckets[i]->key);
             free(cache->buckets[i]);
             cache->buckets[i] = node;
@@ -89,28 +117,28 @@ void LRUCache_destroy(LRUCache *cache) {
  * static functions implementation
  * ============================================= */
 
-static LRUNode *create_node(const char *key, size_t value_size, void *value) {
-    LRUNode *new_lru_node = calloc(1, sizeof(LRUNode));
+static lru_node_t *create_node(const char *key, size_t value_size, void *value) {
+    lru_node_t *new_lru_node = calloc(1, sizeof(lru_node_t));
     new_lru_node->key = strdup(key);
 
     new_lru_node->value = malloc(value_size+1);
     memcpy(new_lru_node->value, value, value_size);
-
+    log_debug("PUT: storing '%.*s' (size: %zu)", (int)value_size, (char*)value, value_size);
     new_lru_node->size = value_size;
     new_lru_node->next = NULL;
 
     return new_lru_node;
 }
 
-static HashNode *create_hash_node(const char *key, LRUNode *lru_node) {
-    HashNode *new_hash_node = calloc(1, sizeof(HashNode));
+static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node) {
+    hash_node_t *new_hash_node = calloc(1, sizeof(hash_node_t));
     new_hash_node->key = strdup(key);
     new_hash_node->node = lru_node;
     new_hash_node->next = NULL;
     return new_hash_node;
 }
 
-static void add_to_head(LRUCache *cache, LRUNode *lru_node) {
+static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
     if (!cache || !lru_node) return;
 
     lru_node->prev = NULL;
@@ -126,7 +154,7 @@ static void add_to_head(LRUCache *cache, LRUNode *lru_node) {
     cache->head = lru_node;
 }
 
-static void move_to_head(LRUCache *cache, LRUNode *lru_node) {
+static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
     if (!cache || !lru_node) return;
 
     // caso in cui sono già in testa, non faccio nulla
