@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpodcache_lib.a CMakeFiles/podcache_lib.dir/src/cache.c.o CMakeFiles/podcache_lib.dir/src/hash_table.c.o CMakeFiles/podcache_lib.dir/src/lru_cache.c.o CMakeFiles/podcache_lib.dir/src/hash_func.c.o CMakeFiles/podcache_lib.dir/src/cas.c.o
+/usr/bin/ranlib libpodcache_lib.a

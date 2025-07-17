@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/carlo/Progetti/github/PodCache/build/cmake_install.cmake",
+		"/Users/carlo/Progetti/github/PodCache/build/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
