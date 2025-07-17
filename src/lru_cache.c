@@ -92,6 +92,7 @@ static LRUNode *create_node(const char *key, size_t value_size, void *value) {
     new_lru_node->key = strdup(key);
     new_lru_node->value = malloc(value_size+1);
     memcpy(new_lru_node->value, value, value_size);
+
     new_lru_node->size = value_size;
     new_lru_node->next = NULL;
     return new_lru_node;
