@@ -1,5 +1,0 @@
-cas_tests 0 0
-hash_table_tests 0 0
----
-cas_tests
-hash_table_tests
