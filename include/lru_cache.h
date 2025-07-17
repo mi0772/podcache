@@ -32,9 +32,9 @@ typedef struct LRUCache {
     LRUNode *head;
     LRUNode *tail;
     HashNode **buckets;
-    int capacity;
-    int size;
-    int hash_size;
+    size_t capacity;
+    size_t size;
+    size_t hash_size;
 } LRUCache;
 
 /* ======================================================

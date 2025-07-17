@@ -20,5 +20,6 @@ static uint32_t hash_djb2(const char* str) {
 }
 
 uint32_t hash_key(const char* key, size_t hash_table_capacity);
+void sha256_string(const char *str, char *output);
 
 #endif //HASH_FUNC_H

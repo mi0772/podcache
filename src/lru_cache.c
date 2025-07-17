@@ -6,8 +6,8 @@
  */
 
 #include "lru_cache.h"
-#include <_string.h>
 #include <stdlib.h>
+#include <string.h>
 #include "cache.h"
 #include "hash_func.h"
 
@@ -41,13 +41,15 @@ int LRUCache_put(LRUCache *cache, const char *key, void *value, size_t value_siz
             free(current->node->value);
             current->node->value = malloc(value_size);
             memcpy(current->node->value, value, value_size);
+
+            // campo aggiornato, va spostato in head
             move_to_head(cache, current->node);
             return 0;
         }
         current = current->next;
     }
 
-    //TODO: Gestire memoria piena e spostamento in head
+    //TODO: Gestire memoria piena
 
     LRUNode *new_lru_node = create_node(key, value_size, value);
     HashNode *new_hash_node = create_hash_node(key, new_lru_node);
@@ -90,11 +92,13 @@ void LRUCache_destroy(LRUCache *cache) {
 static LRUNode *create_node(const char *key, size_t value_size, void *value) {
     LRUNode *new_lru_node = calloc(1, sizeof(LRUNode));
     new_lru_node->key = strdup(key);
+
     new_lru_node->value = malloc(value_size+1);
     memcpy(new_lru_node->value, value, value_size);
 
     new_lru_node->size = value_size;
     new_lru_node->next = NULL;
+
     return new_lru_node;
 }
 
