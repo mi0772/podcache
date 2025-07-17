@@ -51,7 +51,7 @@ int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *val
         }
         current = current->next;
     }
-    return -1;
+    return -100;
 }
 
 int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value_size) {
@@ -159,6 +159,9 @@ static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
 
     // caso in cui sono già in testa, non faccio nulla
     if (cache->head == lru_node) return;
+
+    // caso in cui sono l'unico elemento
+    if (lru_node->prev == NULL && lru_node->next == NULL) return;
 
     //caso in cui sono in coda
     if (cache->tail == lru_node) {

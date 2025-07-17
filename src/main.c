@@ -26,5 +26,20 @@ int main(void) {
         free(value);
     }
 
+    log_info("get elemento che sta solo su disco");
+
+    if (pod_cache_get(pod_cache, "string_test", &value, &value_size) == 0) {
+        log_info("string_test found");
+        log_info("string_test value is %s", (char*)value);
+        free(value);
+    }
+
+    log_info("ora dovrebbe stare in memory");
+
+    if (pod_cache_get(pod_cache, "string_test", &value, &value_size) == 0) {
+        log_info("string_test found");
+        log_info("string_test value is %s", (char*)value);
+        free(value);
+    }
     return 0;
 }

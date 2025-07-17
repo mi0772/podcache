@@ -7,9 +7,11 @@
 
 #include "../include/pod_cache.h"
 
+#include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "cas.h"
 #include "clogger.h"
 
 pod_cache_t *pod_cache_create(size_t capacity, bool use_disk_cache) {
@@ -34,13 +36,32 @@ int pod_cache_put(pod_cache_t *cache, const char *key, void *value, size_t value
     return 0;
 }
 
-int pod_cache_get(pod_cache_t *cache, const char *key, void *out_value, size_t *out_value_size) {
+int pod_cache_get(pod_cache_t *cache, const char *key, void **out_value, size_t *out_value_size) {
     if (!cache) return -1;
 
-    if (lru_cache_get(cache->memory_cache, key, out_value, out_value_size) != 0) {
-        log_error("cannot get key %s from cache, errno = %d", key, -1);
-        return -1;
+    int o_res = lru_cache_get(cache->memory_cache, key, out_value, out_value_size);
+
+    switch (o_res) {
+        case -1:
+            log_error("cannot get key %s from cache, errno = %d", key, -1);
+            return -1;
+        case -100:
+            log_debug("key %s not found, searching into disk cache", key);
+            if (cas_get(key, out_value, out_value_size) == 0) {
+                // trovato su disco, sposto nella cache in-memory
+                lru_cache_put(cache->memory_cache, key, *out_value, *out_value_size);
+
+                // rimuovo da disk cache
+                //cas_evict(key);
+
+                return 0;
+            }
+            log_error("cannot get key %s from disk cache, errno = %d", key, -1);
+            return -1;
+        default:
+            log_info("key %s found", key);
     }
+
     return 0;
 }
 
