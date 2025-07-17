@@ -20,7 +20,7 @@
 
 int cas_put(const char *key, void *value, size_t value_size) {
     char path[512];
-    if (!cas_create_directory(key, path)) return -1;
+    if (cas_create_directory(key, path) != 0) return -1;
 
     //ho il path, ci devo scrivere dentro il contenuto di value
     char complete_path[512];
@@ -58,10 +58,15 @@ int cas_evict(const char *key) {
     int result = cas_get("my_key", &data, &size);
 */
 int cas_get(const char *key, void **buffer, size_t *actual_size) {
-    fs_path_t *fs_path = create_fs_path(key);
-    char *path = write_path(fs_path);
+    char hash[65] = {'\0'};
+    sha256_string(key, hash);
+    fs_path_t *fs_path = create_fs_path(hash);
+    char *path = get_path(fs_path);
+    char complete_path[512];
+    sprintf(complete_path, "%s/%s", path, "value.dat");
+
     struct stat st;
-    if (stat(path, &st) != 0) {
+    if (stat(complete_path, &st) != 0) {
         free_path(fs_path);
         free(path);
         return -1;
@@ -70,7 +75,7 @@ int cas_get(const char *key, void **buffer, size_t *actual_size) {
     size_t file_size = st.st_size;
     *buffer = malloc(file_size);
 
-    FILE *fp = fopen(path, "rb");
+    FILE *fp = fopen(complete_path, "rb");
     if (!fp) {
         free(*buffer);
         free_path(fs_path);
@@ -109,7 +114,7 @@ static int cas_create_directory(const char *key, char *output_path) {
     struct stat st;
     if (stat(path, &st) == 0) {
         // entry esistente, la rimuovo
-        if (!cas_remove(fs_path)) return return_and_free(-1, fs_path);
+        if (cas_remove(fs_path) != 0) return return_and_free(-1, fs_path);
     }
 
     sprintf(path, "%s/%s", BASE_PATH, fs_path->p[0]);
@@ -169,7 +174,7 @@ static fs_path_t *create_fs_path(const char hash[65]) {
     return r;
 }
 
-static char *write_path(const fs_path_t *path) {
+static char *get_path(const fs_path_t *path) {
     char *r = calloc(1, 512);
     sprintf(r, "%s/%s/%s/%s/%s", BASE_PATH, path->p[0], path->p[1], path->p[2], path->p[3]);
     return r;

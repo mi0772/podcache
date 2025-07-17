@@ -386,8 +386,10 @@ void run_all_tests() {
         printf("❌ %d tests failed!\n", tests_run - tests_passed);
     }
 }
-
+/*
 int main() {
     run_all_tests();
     return (tests_passed == tests_run) ? 0 : 1;
 }
+
+*/

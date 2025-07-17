@@ -28,5 +28,4 @@ void sha256_string(const char* str, char* output) {
         sprintf(output + (i * 2), "%02x", hash[i]);
     }
     output[64] = '\0';
-    printf("hash: %s\n", output);
 }
