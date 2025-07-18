@@ -45,6 +45,22 @@ int main(void) {
     log_info("memoria terminata provo a scrivere ulteriore record");
     pod_cache_put(pod_cache, "test_finale", "test_finale", strlen("test_finale"));
 
+    log_info("get test_1 che dovrebbe essere ormai su disco");
+
+    if (pod_cache_get(pod_cache, "test_1", &value, &value_size) == 0) {
+        log_info("carlo found");
+        log_info("carlo value is %s", (char*)value);
+        free(value);
+    }
+
+    log_info("get test_1 ancora che dovrebbe essere in memoria ora");
+
+    if (pod_cache_get(pod_cache, "test_1", &value, &value_size) == 0) {
+        log_info("carlo found");
+        log_info("carlo value is %s", (char*)value);
+        free(value);
+    }
+    pod_cache_destroy(pod_cache);
 
     return 0;
 }
