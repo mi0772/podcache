@@ -35,7 +35,6 @@ add_library(podcache_lib
         src/toml.c
         include/toml.h
         src/pod_cache.c
-        src/hash_table.c
         src/lru_cache.c
         src/hash_func.c
         include/hash_func.h

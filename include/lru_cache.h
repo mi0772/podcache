@@ -8,10 +8,8 @@
 #ifndef LRU_CACHE_H
 #define LRU_CACHE_H
 #include <stddef.h>
-#include <time.h>
-#include "hash_table.h"
+#include <pthread.h>
 
-// nodo hash_table
 typedef struct lru_node {
     char *key;
     void *value;
@@ -35,6 +33,9 @@ typedef struct lru_cache {
     size_t max_bytes_capacity;
     size_t current_bytes_size;
     size_t hash_table_size;
+    pthread_mutex_t mutex;
+
+
 } lru_cache_t;
 
 /* ======================================================

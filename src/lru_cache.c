@@ -23,6 +23,12 @@
  * ============================================= */
 lru_cache_t *lru_cache_create(size_t capacity) {
     lru_cache_t *cache = calloc(1, sizeof(lru_cache_t));
+
+    //create mutex for put
+    if (pthread_mutex_init(&cache->mutex, NULL) !=0 ) {
+        return NULL;
+    }
+
     cache->buckets = calloc(capacity * 2, sizeof(hash_node_t *));
     if (!cache->buckets) {
         free(cache);
@@ -60,6 +66,7 @@ int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *val
 int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value_size) {
     if (!cache) return -1;
 
+    pthread_mutex_lock(&cache->mutex);
     //controllo se la memoria è disponibile
     while ( (cache->current_bytes_size + value_size) >= cache->max_bytes_capacity) {
         //memoria piena, rimuovo elemento di coda
@@ -84,6 +91,7 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
             cache->current_bytes_size += (current->node->size - old_value_size);
             // campo aggiornato, va spostato in head
             move_to_head(cache, current->node);
+            pthread_mutex_unlock(&cache->mutex);
             return 0;
         }
         current = current->next;
@@ -96,6 +104,7 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
 
     cache->current_bytes_size += value_size;
     add_to_head(cache, new_lru_node);
+    pthread_mutex_unlock(&cache->mutex);
     return 0;
 }
 
