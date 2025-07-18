@@ -11,9 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cas.h"
 #include "clogger.h"
 #include "hash_func.h"
 #include "pod_cache.h"
+
+#define HASH_TABLE_SIZE 1024 * 1024
 
 /* =============================================
  * public functions implementation
@@ -26,8 +29,8 @@ lru_cache_t *lru_cache_create(size_t capacity) {
         return NULL;
     }
 
-    cache->capacity = capacity;
-    cache->hash_size = capacity * 2;
+    cache->max_bytes_capacity = capacity;
+    cache->hash_table_size = HASH_TABLE_SIZE;
     cache->head = NULL;
     cache->tail = NULL;
     return cache;
@@ -36,7 +39,7 @@ lru_cache_t *lru_cache_create(size_t capacity) {
 int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *value_size) {
     if (!cache) return -1;
 
-    uint32_t hash = hash_key(key, cache->hash_size);
+    uint32_t hash = hash_key(key, cache->hash_table_size);
     hash_node_t *current = cache->buckets[hash];
     while (current) {
         if (strcmp(current->key, key) == 0) {
@@ -46,7 +49,7 @@ int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *val
             memcpy(*value, current->node->value, current->node->size);
             log_debug("GET: retrieved '%.*s' (size: %zu)", (int)*value_size, (char*)*value, *value_size);
 
-            move_to_head(cache, current);
+            move_to_head(cache, current->node);
             return 0;
         }
         current = current->next;
@@ -57,19 +60,28 @@ int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *val
 int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value_size) {
     if (!cache) return -1;
 
-    uint32_t hash = hash_key(key, cache->hash_size);
+    //controllo se la memoria è disponibile
+    while ( (cache->current_bytes_size + value_size) >= cache->max_bytes_capacity) {
+        //memoria piena, rimuovo elemento di coda
+        log_info("memory full, move tail element into disk cache");
+        move_tail_to_disk(cache);
+    }
+
+    uint32_t hash = hash_key(key, cache->hash_table_size);
 
     hash_node_t *current = cache->buckets[hash];
     while (current) {
         if (strcmp(current->key, key) == 0) {
 
             free(current->node->value);
+            size_t old_value_size = current->node->size;
 
             current->node->value = malloc(value_size);
             current->node->size = value_size;
             memcpy(current->node->value, value, value_size);
             log_debug("PUT: updating '%.*s' (size: %zu)", (int)value_size, (char*)value, value_size);
 
+            cache->current_bytes_size += (current->node->size - old_value_size);
             // campo aggiornato, va spostato in head
             move_to_head(cache, current->node);
             return 0;
@@ -77,13 +89,12 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
         current = current->next;
     }
 
-    //TODO: Gestire memoria piena
-
     lru_node_t *new_lru_node = create_node(key, value_size, value);
     hash_node_t *new_hash_node = create_hash_node(key, new_lru_node);
     new_hash_node->next = cache->buckets[hash];
     cache->buckets[hash] = new_hash_node;
-    cache->size++;
+
+    cache->current_bytes_size += value_size;
     add_to_head(cache, new_lru_node);
     return 0;
 }
@@ -100,7 +111,7 @@ void lru_cache_destroy(lru_cache_t *cache) {
         current = next;
     }
 
-    for (int i=0 ; i < cache->hash_size ; i++) {
+    for (int i=0 ; i < cache->hash_table_size ; i++) {
         while (cache->buckets[i]) {
             hash_node_t *node = cache->buckets[i]->next;
             free(cache->buckets[i]->key);
@@ -152,6 +163,46 @@ static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
     lru_node->next = cache->head;
     cache->head->prev = lru_node;
     cache->head = lru_node;
+}
+
+static void move_tail_to_disk(lru_cache_t *cache) {
+    if (!cache || !cache->tail) return;
+
+    lru_node_t *tail_node = cache->tail;
+
+    if (cache->head == cache->tail) {
+        cache->head = NULL;
+        cache->tail = NULL;
+    } else {
+        cache->tail = tail_node->prev;
+        cache->tail->next = NULL;
+    }
+
+    uint32_t index = hash_key(tail_node->key, cache->hash_table_size);
+    hash_node_t *current = cache->buckets[index];
+    hash_node_t *prev = NULL;
+
+    while (current) {
+        if (current->node == tail_node) {
+            cas_put(current->key, current->node->value, current->node->size);
+            log_info("element with key %s was moved to disk cache", current->key);
+            if (prev) {
+                prev->next = current->next;
+            } else {
+                cache->buckets[index] = current->next;
+            }
+            free(current->key);
+            free(current);
+            break;
+        }
+        prev = current;
+        current = current->next;
+    }
+    cache->current_bytes_size -= tail_node->size;
+    free(tail_node->key);
+    free(tail_node->value);
+    free(tail_node);
+    log_info("removed tail element from list");
 }
 
 static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node) {

@@ -32,9 +32,9 @@ typedef struct lru_cache {
     lru_node_t *head;
     lru_node_t *tail;
     hash_node_t **buckets;
-    size_t capacity;
-    size_t size;
-    size_t hash_size;
+    size_t max_bytes_capacity;
+    size_t current_bytes_size;
+    size_t hash_table_size;
 } lru_cache_t;
 
 /* ======================================================
@@ -44,6 +44,7 @@ static lru_node_t *create_node(const char *key, size_t value_size, void *value);
 static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node);
 static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node);
 static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node);
+static void move_tail_to_disk(lru_cache_t *cache);
 
 /* ======================================================
  * forward declaration public functions

@@ -61,6 +61,8 @@ add_executable(podcache src/main.c
         include/hash_func.h
         src/cas.c
         include/cas.h
+        src/server_tcp.c
+        include/server_tcp.h
 )
 target_link_libraries(podcache podcache_lib)
 

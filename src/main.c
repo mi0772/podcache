@@ -11,7 +11,7 @@ int main(void) {
 
     log_info("PodCache - v-alpha-0.0.1");
 
-    pod_cache_t *pod_cache = pod_cache_create(MB_TO_BYTES(10), true);
+    pod_cache_t *pod_cache = pod_cache_create(MB_TO_BYTES(10));
     log_info("main cache holder created");
 
     log_info("put 1 test element");
@@ -25,21 +25,26 @@ int main(void) {
         log_info("carlo value is %s", (char*)value);
         free(value);
     }
+    pod_cache_destroy(pod_cache);
 
-    log_info("get elemento che sta solo su disco");
+    log_info("inizializzo nuova cache con dimensione molto piccola");
 
-    if (pod_cache_get(pod_cache, "string_test", &value, &value_size) == 0) {
-        log_info("string_test found");
-        log_info("string_test value is %s", (char*)value);
-        free(value);
-    }
+    pod_cache = pod_cache_create(1024); // solo 1 bytes
 
-    log_info("ora dovrebbe stare in memory");
+    char key[65];
+    char v[512];
+    int c = 0;
+    do {
+        c++;
 
-    if (pod_cache_get(pod_cache, "string_test", &value, &value_size) == 0) {
-        log_info("string_test found");
-        log_info("string_test value is %s", (char*)value);
-        free(value);
-    }
+        sprintf(key, "test_%d", c);
+        sprintf(v,"value of %d", c);
+        pod_cache_put(pod_cache, key, v, strlen(v));
+        log_info("bytes occupati : %d su %d", pod_cache->memory_cache->current_bytes_size, pod_cache->capacity);
+    } while (pod_cache->capacity > (pod_cache->memory_cache->current_bytes_size+strlen(v)));
+    log_info("memoria terminata provo a scrivere ulteriore record");
+    pod_cache_put(pod_cache, "test_finale", "test_finale", strlen("test_finale"));
+
+
     return 0;
 }
