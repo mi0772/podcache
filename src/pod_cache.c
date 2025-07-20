@@ -79,4 +79,9 @@ void pod_cache_destroy(pod_cache_t *pod_cache) {
 
     lru_cache_destroy(pod_cache->memory_cache);
     free(pod_cache);
+
+    //TODO: Cleanup
+    // vanno rimossi tutti i file creati ? credo di si anche se non abbiamo un registro di quali sono i suoi
+    // questo potrebbe portare a cancellare anche elementi di altre cache
+
 }
