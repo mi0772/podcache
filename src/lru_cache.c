@@ -120,6 +120,7 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
 void lru_cache_destroy(lru_cache_t *cache) {
     if (cache == NULL) return;
 
+    // Libera tutti i nodi attraversando solo la lista LRU
     lru_node_t *current = cache->head;
     while (current) {
         lru_node_t *next = current->next;
@@ -129,15 +130,7 @@ void lru_cache_destroy(lru_cache_t *cache) {
         current = next;
     }
 
-    for (int i=0 ; i < cache->hash_table_size ; i++) {
-        while (cache->buckets[i]) {
-            hash_node_t *node = cache->buckets[i]->next;
-            free(cache->buckets[i]->key);
-            free(cache->buckets[i]);
-            cache->buckets[i] = node;
-        }
-
-    }
+    // Libera solo l'array di bucket (i nodi sono già stati liberati sopra)
     free(cache->buckets);
     free(cache);
 }
