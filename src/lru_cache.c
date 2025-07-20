@@ -16,8 +16,6 @@
 #include "hash_func.h"
 #include "pod_cache.h"
 
-#define HASH_TABLE_SIZE 1024 * 1024
-
 /* ======================================================
  * forward declaration static functions
 *  ====================================================== */
@@ -26,26 +24,28 @@ static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node);
 static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node);
 static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node);
 static void move_tail_to_disk(lru_cache_t *cache);
+static size_t calculate_hash_table_size(size_t max_bytes_capacity);
 
 /* =============================================
  * public functions implementation
  * ============================================= */
-lru_cache_t *lru_cache_create(size_t capacity) {
+lru_cache_t *lru_cache_create(size_t max_bytes_capacity) {
     lru_cache_t *cache = calloc(1, sizeof(lru_cache_t));
 
     //create mutex for put
     if (pthread_mutex_init(&cache->mutex, NULL) !=0 ) {
         return NULL;
     }
+    size_t estimated_capacity = calculate_hash_table_size(max_bytes_capacity) + 1;
 
-    cache->buckets = malloc(sizeof(hash_node_t *) * HASH_TABLE_SIZE);
+    cache->buckets = calloc(estimated_capacity, sizeof(hash_node_t *));
     if (!cache->buckets) {
         free(cache);
         return NULL;
     }
 
-    cache->max_bytes_capacity = capacity;
-    cache->hash_table_size = HASH_TABLE_SIZE;
+    cache->max_bytes_capacity = max_bytes_capacity;
+    cache->hash_table_size = estimated_capacity;
     cache->head = NULL;
     cache->tail = NULL;
     return cache;
@@ -251,4 +251,20 @@ static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
         cache->head->prev = lru_node;
 
     cache->head = lru_node;
+}
+
+static size_t calculate_hash_table_size(size_t max_bytes_capacity) {
+    // Stima elementi medi (assumendo 1KB per elemento)
+    size_t estimated_elements = max_bytes_capacity / 1024;
+
+    // Load factor target: 0.75 (75% di riempimento)
+    size_t target_size = estimated_elements / 0.75;
+
+    // Arrotonda alla prossima potenza di 2 per performance
+    size_t size = 16; // minimo
+    while (size < target_size && size < 65536) { // max 64K
+        size <<= 1;
+    }
+
+    return size;
 }
