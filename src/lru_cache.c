@@ -38,7 +38,7 @@ lru_cache_t *lru_cache_create(size_t capacity) {
         return NULL;
     }
 
-    cache->buckets = calloc(capacity * 2, sizeof(hash_node_t *));
+    cache->buckets = malloc(sizeof(hash_node_t *) * HASH_TABLE_SIZE);
     if (!cache->buckets) {
         free(cache);
         return NULL;

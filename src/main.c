@@ -11,25 +11,25 @@ int main(void) {
 
     log_info("PodCache - v-alpha-0.0.1");
 
-    pod_cache_t *pod_cache = pod_cache_create(MB_TO_BYTES(10));
+    pod_cache_t *pod_cache_g = pod_cache_create(MB_TO_BYTES(10));
     log_info("main cache holder created");
 
     log_info("put 1 test element");
-    pod_cache_put(pod_cache, "carlo", "stringa di prova", strlen("stringa di prova"));
+    pod_cache_put(pod_cache_g, "carlo", "stringa di prova", strlen("stringa di prova"));
 
     log_info("get 1 test element");
     void *value = NULL;
     size_t value_size = 0;
-    if (pod_cache_get(pod_cache, "carlo", &value, &value_size) == 0) {
+    if (pod_cache_get(pod_cache_g, "carlo", &value, &value_size) == 0) {
         log_info("carlo found");
         log_info("carlo value is %s", (char*)value);
         free(value);
     }
-    pod_cache_destroy(pod_cache);
+    pod_cache_destroy(pod_cache_g);
 
     log_info("inizializzo nuova cache con dimensione molto piccola");
 
-    pod_cache = pod_cache_create(1024); // solo 1 bytes
+    pod_cache_t *pod_cache = pod_cache_create(1024); // solo 1 bytes
 
     char key[65];
     char v[512];

@@ -24,10 +24,10 @@ MIT License
 */
 
 #include "../include/clogger.h"
-#include <_inttypes.h>
+#include <inttypes.h>
 #include <pthread.h>
 #include <string.h>
-#include <sys/_types/_caddr_t.h>
+#include <sys/types.h>
 #include <sys/types.h>
 #include <unistd.h>
 
