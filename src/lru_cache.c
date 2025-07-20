@@ -18,6 +18,15 @@
 
 #define HASH_TABLE_SIZE 1024 * 1024
 
+/* ======================================================
+ * forward declaration static functions
+*  ====================================================== */
+static lru_node_t *create_node(const char *key, size_t value_size, void *value);
+static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node);
+static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node);
+static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node);
+static void move_tail_to_disk(lru_cache_t *cache);
+
 /* =============================================
  * public functions implementation
  * ============================================= */
@@ -174,6 +183,10 @@ static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
     cache->head = lru_node;
 }
 
+
+/* TODO: Riscrivere daccapo
+ * Visto che te l'ha scritta cloude, questo non va affatto bene, domani la riscrivi
+ * */
 static void move_tail_to_disk(lru_cache_t *cache) {
     if (!cache || !cache->tail) return;
 
@@ -185,6 +198,7 @@ static void move_tail_to_disk(lru_cache_t *cache) {
     } else {
         cache->tail = tail_node->prev;
         cache->tail->next = NULL;
+
     }
 
     uint32_t index = hash_key(tail_node->key, cache->hash_table_size);

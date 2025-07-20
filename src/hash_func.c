@@ -6,26 +6,52 @@
  */
 
 #include "../include/hash_func.h"
+#include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <string.h>
-
 #include <stdio.h>
+
+
+static uint32_t hash_djb2(const char* str) {
+    uint32_t hash = 5381;
+    int c;
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+    return hash;
+}
 
 uint32_t hash_key(const char* key, size_t hash_table_capacity) {
     return hash_djb2(key) % hash_table_capacity;
 }
 
-void sha256_string(const char* str, char* output) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
 
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, str, strlen(str));
-    SHA256_Final(hash, &sha256);
+void sha256_string(const char* str, char* output) {
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int hash_len;
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    if (ctx == NULL) {
+        // Gestione errore
+        output[0] = '\0';
+        return;
+    }
+
+    if (EVP_DigestInit_ex(ctx, EVP_sha256(), NULL) != 1 ||
+        EVP_DigestUpdate(ctx, str, strlen(str)) != 1 ||
+        EVP_DigestFinal_ex(ctx, hash, &hash_len) != 1) {
+        // Gestione errore
+        EVP_MD_CTX_free(ctx);
+        output[0] = '\0';
+        return;
+        }
+
+    EVP_MD_CTX_free(ctx);
 
     // Converti in stringa esadecimale
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+    for (unsigned int i = 0; i < hash_len; i++) {
         sprintf(output + (i * 2), "%02x", hash[i]);
     }
-    output[64] = '\0';
+    output[hash_len * 2] = '\0';
 }
+

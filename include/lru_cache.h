@@ -38,18 +38,6 @@ typedef struct lru_cache {
 
 } lru_cache_t;
 
-/* ======================================================
- * forward declaration static functions
-*  ====================================================== */
-static lru_node_t *create_node(const char *key, size_t value_size, void *value);
-static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node);
-static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node);
-static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node);
-static void move_tail_to_disk(lru_cache_t *cache);
-
-/* ======================================================
- * forward declaration public functions
-*  ====================================================== */
 lru_cache_t *lru_cache_create(size_t capacity);
 int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value_size);
 int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *value_size);
