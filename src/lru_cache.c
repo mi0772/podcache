@@ -177,10 +177,6 @@ static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
     cache->head = lru_node;
 }
 
-
-/* TODO: Riscrivere daccapo
- * Visto che te l'ha scritta cloude, questo non va affatto bene, domani la riscrivi
- * */
 static void move_tail_to_disk(lru_cache_t *cache) {
     if (!cache || !cache->tail) return;
 
