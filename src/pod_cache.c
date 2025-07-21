@@ -56,9 +56,10 @@ int pod_cache_put(pod_cache_t *cache, const char *key, void *value, size_t value
 
             //write it to disk cache
             char output_path[512];
-            cas_put(tail->key, tail->value, tail->size, output_path);
+            cas_put(cache->cas_registry, tail->key, tail->value, tail->size, output_path);
             // TODO: inserire nel registry l'output generato, fare una routine perchè è un array dinamico, se non
             // c'è spazio bisogna fare realloc
+            cas_add_to_registry(cache->cas_registry, output_path);
 
             // remove from tail
             lru_cache_remove_tail(cache->partitions[partition_index]);
@@ -80,12 +81,12 @@ int pod_cache_get(pod_cache_t *cache, const char *key, void **out_value, size_t 
             return -1;
         case -100:
             log_debug("key %s not found, searching into disk cache", key);
-            if (cas_get(key, out_value, out_value_size) == 0) {
+            if (cas_get(cache->cas_registry, key, out_value, out_value_size) == 0) {
                 // trovato su disco, sposto nella cache in-memory
                 lru_cache_put(cache->partitions[partition_index], key, *out_value, *out_value_size);
 
                 // rimuovo da disk cache
-                cas_evict(key);
+                cas_evict(key, cache->cas_registry);
 
                 return 0;
             }
