@@ -9,11 +9,14 @@
 
 #include "../include/cas.h"
 
-#include <string.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/errno.h>
 #include <sys/stat.h>
+
+#include "clogger.h"
 #include "hash_func.h"
 
 #define BASE_PATH "."
@@ -50,19 +53,38 @@ int cas_put(const char *key, void *value, size_t value_size) {
     return 0;
 }
 
+static int remove_dir(char *dir) {
+    struct stat st;
+    if (stat(dir, &st) == 0) {
+        int remove_result = remove(dir);
+        return remove_result;
+    }
+    return -1;
+}
+
 int cas_evict(const char *key) {
-    char path[512];
     char hash[65] = {'\0'};
+    char path[512];
+
     sha256_string(key, hash);
     fs_path_t *fs_path = create_fs_path(hash);
 
-    sprintf(path, "%s/%s/%s/%s/%s", BASE_PATH, fs_path->p[0], fs_path->p[1], fs_path->p[2], fs_path->p[3]);
-    struct stat st;
-    if (stat(path, &st) == 0) {
-        remove(path);
-        free(fs_path);
-        return 0;
+    // Array dei path da rimuovere (dal più profondo al più superficiale)
+    const char *patterns[] = {
+        "%s/%s/%s/%s/%s/value.dat",
+        "%s/%s/%s/%s/%s",
+        "%s/%s/%s/%s",
+        "%s/%s/%s",
+        "%s/%s"
+    };
+
+    for (int i = 0; i < 5; i++) {
+        snprintf(path, sizeof(path), patterns[i], BASE_PATH,
+                fs_path->p[0], fs_path->p[1], fs_path->p[2], fs_path->p[3]);
+        remove_dir(path);
     }
+
+    free(fs_path);
     return -1;
 }
 

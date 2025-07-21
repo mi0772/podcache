@@ -15,14 +15,16 @@
 
 #define MB_TO_BYTES(mb) ((mb) * 1024 * 1024)
 
-typedef struct pod_cache {
-    lru_cache_t *memory_cache;
-    size_t capacity;
-    pthread_mutex_t mutex;
+typedef unsigned short u_short;
 
+typedef struct pod_cache {
+    size_t total_capacity;
+    size_t partition_capacity;
+    u_short partition_number;
+    lru_cache_t **partitions;
 } pod_cache_t;
 
-pod_cache_t *pod_cache_create(size_t capacity);
+pod_cache_t *pod_cache_create(size_t capacity, u_short partitions);
 void pod_cache_destroy(pod_cache_t *pod_cache);
 int pod_cache_put(pod_cache_t *cache, const char *key, void *value, size_t value_size);
 int pod_cache_get(pod_cache_t *cache, const char *key, void **out_value, size_t *out_value_size);

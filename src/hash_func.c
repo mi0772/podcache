@@ -22,7 +22,11 @@ static uint32_t hash_djb2(const char* str) {
 }
 
 uint32_t hash_key(const char* key, size_t hash_table_capacity) {
-    return hash_djb2(key) % hash_table_capacity;
+    return hash(key) % hash_table_capacity;
+}
+
+uint32_t hash(const char* key) {
+    return hash_djb2(key);
 }
 
 
