@@ -2,7 +2,7 @@
 #include <string.h>
 
 
-#include "clogger.h"
+#include "../include/clogger.h"
 #include "pod_cache.h"
 
 
@@ -22,7 +22,7 @@ int main(void) {
     size_t value_size = 0;
     if (pod_cache_get(pod_cache_g, "carlo", &value, &value_size) == 0) {
         log_info("carlo found");
-        log_info("carlo value is %s", (char*)value);
+        log_info("carlo value is %s", (char *) value);
         free(value);
     }
     pod_cache_destroy(pod_cache_g);
@@ -39,10 +39,13 @@ int main(void) {
         c++;
 
         sprintf(key, "test_%d", c);
-        sprintf(v,"value of %d", c);
+        sprintf(v, "value of %d", c);
         latest_partition = pod_cache_put(pod_cache, key, v, strlen(v));
-        log_info("bytes occupati su partizione %d : %d su %d", latest_partition, pod_cache->partitions[latest_partition]->current_bytes_size, pod_cache->partitions[latest_partition]->max_bytes_capacity);
-    } while (pod_cache->partitions[latest_partition]->max_bytes_capacity > (pod_cache->partitions[latest_partition]->current_bytes_size+strlen(v)));
+        log_info("bytes occupati su partizione %d : %d su %d", latest_partition,
+                 pod_cache->partitions[latest_partition]->current_bytes_size,
+                 pod_cache->partitions[latest_partition]->max_bytes_capacity);
+    } while (pod_cache->partitions[latest_partition]->max_bytes_capacity >
+             (pod_cache->partitions[latest_partition]->current_bytes_size + strlen(v)));
     log_info("memoria terminata sulla partizione %d provo a scrivere ulteriore record", latest_partition);
     pod_cache_put(pod_cache, "test_finale", "test_finale", strlen("test_finale"));
 
@@ -50,7 +53,7 @@ int main(void) {
 
     if (pod_cache_get(pod_cache, "test_1", &value, &value_size) == 0) {
         log_info("carlo found");
-        log_info("carlo value is %s", (char*)value);
+        log_info("carlo value is %s", (char *) value);
         free(value);
     }
 
@@ -58,7 +61,7 @@ int main(void) {
 
     if (pod_cache_get(pod_cache, "test_1", &value, &value_size) == 0) {
         log_info("carlo found");
-        log_info("carlo value is %s", (char*)value);
+        log_info("carlo value is %s", (char *) value);
         free(value);
     }
     pod_cache_destroy(pod_cache);

@@ -30,6 +30,7 @@ pod_cache_t *pod_cache_create(size_t capacity, u_short partitions) {
     pod_cache->partition_capacity = single_partition_capacity;
     pod_cache->partition_number = partitions;
     pod_cache->total_capacity = capacity;
+    pod_cache->cas_registry = cas_create_registry();
 
     pod_cache->partitions = malloc( partitions * sizeof(lru_cache_t *));
     for (int i=0 ; i < partitions ; i++) {
@@ -43,12 +44,28 @@ int pod_cache_put(pod_cache_t *cache, const char *key, void *value, size_t value
     // un elemento va sempre inserito nella cache in memory
     int partition_index = get_partition(hash(key), cache->partition_number);
 
-    if (lru_cache_put(cache->partitions[partition_index], key, value, value_size) != 0) {
-        log_error("cannot put key %s in memory, errno = %d", key, -1);
-        return -1;
+    int put_response = lru_cache_put(cache->partitions[partition_index], key, value, value_size);
+    switch (put_response) {
+        case -1:
+            log_error("cannot put key %s in memory, errno = %d", key, -1);
+            return -1;
+        case -900:
+            log_warn("partition %d full, move tail to disk", partition_index);
+            //get pointer to tail element in partition
+            lru_node_t *tail = lru_cache_get_tail_node(cache->partitions[partition_index]);
+
+            //write it to disk cache
+            char output_path[512];
+            cas_put(tail->key, tail->value, tail->size, output_path);
+            // TODO: inserire nel registry l'output generato, fare una routine perchè è un array dinamico, se non
+            // c'è spazio bisogna fare realloc
+
+            // remove from tail
+            lru_cache_remove_tail(cache->partitions[partition_index]);
+            return 0;
+        default:
+            return partition_index;
     }
-    log_info("key %s inserted into cache", key);
-    return partition_index;
 }
 
 int pod_cache_get(pod_cache_t *cache, const char *key, void **out_value, size_t *out_value_size) {

@@ -12,6 +12,7 @@
 
 #include "lru_cache.h"
 #include <pthread.h>
+#include "cas.h"
 
 #define MB_TO_BYTES(mb) ((mb) * 1024 * 1024)
 
@@ -22,6 +23,7 @@ typedef struct pod_cache {
     size_t partition_capacity;
     u_short partition_number;
     lru_cache_t **partitions;
+    cas_registry_t *cas_registry;
 } pod_cache_t;
 
 pod_cache_t *pod_cache_create(size_t capacity, u_short partitions);

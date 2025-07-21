@@ -23,7 +23,7 @@ static lru_node_t *create_node(const char *key, size_t value_size, void *value);
 static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node);
 static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node);
 static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node);
-static void move_tail_to_disk(lru_cache_t *cache);
+//static void move_tail_to_disk(lru_cache_t *cache);
 static size_t calculate_hash_table_size(size_t max_bytes_capacity);
 
 /* =============================================
@@ -81,7 +81,8 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
     while ( (cache->current_bytes_size + value_size) >= cache->max_bytes_capacity) {
         //memoria piena, rimuovo elemento di coda
         log_info("memory full, move tail element into disk cache");
-        move_tail_to_disk(cache);
+        pthread_mutex_unlock(&cache->mutex);
+        return -900;
     }
 
     uint32_t hash = hash_key(key, cache->hash_table_size);
@@ -177,8 +178,14 @@ static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
     cache->head = lru_node;
 }
 
-static void move_tail_to_disk(lru_cache_t *cache) {
-    if (!cache || !cache->tail) return;
+lru_node_t *lru_cache_get_tail_node(lru_cache_t *cache) {
+    if (!cache->tail) return NULL;
+
+    return cache->tail;
+}
+
+int lru_cache_remove_tail(lru_cache_t *cache) {
+    if (!cache || !cache->tail) return -1;
 
     lru_node_t *tail_node = cache->tail;
 
@@ -197,8 +204,6 @@ static void move_tail_to_disk(lru_cache_t *cache) {
 
     while (current) {
         if (current->node == tail_node) {
-            cas_put(current->key, current->node->value, current->node->size);
-            log_info("element with key %s was moved to disk cache", current->key);
             if (prev) {
                 prev->next = current->next;
             } else {
@@ -216,6 +221,7 @@ static void move_tail_to_disk(lru_cache_t *cache) {
     free(tail_node->value);
     free(tail_node);
     log_info("removed tail element from list");
+    return 0;
 }
 
 static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node) {

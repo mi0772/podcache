@@ -20,6 +20,7 @@
 #include "hash_func.h"
 
 #define BASE_PATH "."
+#define CAS_REGISTRY_INITIAL_CAPACITY 100
 
 /* ========================================================
  * forward static declaration
@@ -32,16 +33,26 @@ static int return_and_free(int result, fs_path_t *path);
 static char *get_path(const fs_path_t *path);
 static void free_path(fs_path_t *path);
 
+
 /* =============================================
  * public functions implementation
  * ============================================= */
-int cas_put(const char *key, void *value, size_t value_size) {
-    char path[512];
-    if (cas_create_directory(key, path) != 0) return -1;
+
+cas_registry_t *cas_create_registry() {
+
+    cas_registry_t *registry = malloc(sizeof(cas_registry_t) * CAS_REGISTRY_INITIAL_CAPACITY);
+    registry->capacity = CAS_REGISTRY_INITIAL_CAPACITY;
+    registry->entries = 0;
+    return registry;
+}
+
+
+int cas_put(const char *key, void *value, size_t value_size, char *output_path) {
+    if (cas_create_directory(key, output_path) != 0) return -1;
 
     //ho il path, ci devo scrivere dentro il contenuto di value
     char complete_path[512];
-    sprintf(complete_path, "%s/%s", path, "value.dat");
+    sprintf(complete_path, "%s/%s", output_path, "value.dat");
     FILE *fp = fopen(complete_path, "wb");
     if (!fp) return -1;
     if (fwrite(value, 1, value_size, fp) != value_size) {
