@@ -58,7 +58,7 @@ int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *val
     hash_node_t *current = cache->buckets[hash];
     while (current) {
         if (strcmp(current->key, key) == 0) {
-            // found !
+            // item found, read value and move it to the head of linkedlist
             *value = malloc(current->node->size);
             *value_size = current->node->size;
             memcpy(*value, current->node->value, current->node->size);
@@ -69,6 +69,7 @@ int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *val
         }
         current = current->next;
     }
+    // not found, returning -100
     return -100;
 }
 
