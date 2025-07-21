@@ -103,15 +103,12 @@ int pod_cache_get(pod_cache_t *cache, const char *key, void **out_value, size_t 
 void pod_cache_destroy(pod_cache_t *pod_cache) {
     if (!pod_cache) return;
 
+    cas_registry_destroy(pod_cache->cas_registry);
+
     for (int i=0 ; i < pod_cache->partition_number ; i++) {
         lru_cache_destroy(pod_cache->partitions[i]);
         free(pod_cache);
     }
-
-    //TODO: Cleanup
-    // vanno rimossi tutti i file creati ? credo di si anche se non abbiamo un registro di quali sono i suoi
-    // questo potrebbe portare a cancellare anche elementi di altre cache
-
 }
 
 static int get_partition(uint32_t hash, u_short partition_count) {

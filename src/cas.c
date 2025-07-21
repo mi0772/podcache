@@ -9,7 +9,6 @@
 
 #include "../include/cas.h"
 
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,9 +16,11 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <dirent.h>
 
-#include "clogger.h"
 #include "hash_func.h"
+
+
 
 #define CAS_REGISTRY_INITIAL_CAPACITY 100
 
@@ -34,7 +35,7 @@ static int return_and_free(int result, fs_path_t *path);
 static char *get_path(const cas_registry_t *registry, const fs_path_t *path);
 static void free_path(fs_path_t *path);
 static void generate_base_path(char *buffer);
-
+int cleanup(const char *path);
 
 /* =============================================
  * public functions implementation
@@ -134,14 +135,20 @@ int cas_add_to_registry(cas_registry_t *registry, char *path) {
 void cas_registry_destroy(cas_registry_t *registry) {
     if (!registry) return;
 
-    while (registry->entries) {
-
-        //TODO :rimuovo il file se esistente
-
-
+    if (registry->entries != NULL) {
+        // Prima libera ogni singola stringa
+        for (size_t i = 0; i < registry->entries_count; i++) {
+            if (registry->entries[i] != NULL) {
+                //TODO: rimuovi il file se esistente
+                free(registry->entries[i]);  // libera la stringa
+            }
+        }
+        cleanup(registry->base_path);
+        // Poi libera l'array di puntatori
         free(registry->entries);
-        registry->entries++;
     }
+
+    // Infine libera la struct
     free(registry);
 }
 
@@ -302,4 +309,53 @@ static void generate_base_path(char *buffer) {
     }
 
     sprintf(buffer, "%s%08x",root_fs, (unsigned int)rand());
+}
+
+int cleanup(const char *path) {
+    DIR *dir;
+    struct dirent *entry;
+    struct stat statbuf;
+    char filepath[1024];
+
+    dir = opendir(path);
+    if (dir == NULL) {
+        perror("opendir");
+        return -1;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        // Salta . e ..
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        // Costruisci il path completo
+        snprintf(filepath, sizeof(filepath), "%s/%s", path, entry->d_name);
+
+        // Controlla se è file o directory
+        if (stat(filepath, &statbuf) == -1) {
+            perror("stat");
+            continue;
+        }
+
+        if (S_ISDIR(statbuf.st_mode)) {
+            // È una directory: chiamata ricorsiva
+            cleanup(filepath);
+        } else {
+            // È un file: rimuovi
+            if (remove(filepath) != 0) {
+                perror("remove file");
+            }
+        }
+    }
+
+    closedir(dir);
+
+    // Rimuovi la directory ora vuota
+    if (rmdir(path) != 0) {
+        perror("rmdir");
+        return -1;
+    }
+
+    return 0;
 }
