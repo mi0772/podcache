@@ -43,7 +43,6 @@ int cleanup(const char *path);
 cas_registry_t *cas_create_registry() {
 
     cas_registry_t *registry = malloc(sizeof(cas_registry_t));
-    char bp[9] = {'\0'};
     generate_base_path(registry->base_path);
 
     registry->entries = malloc(CAS_REGISTRY_INITIAL_CAPACITY * sizeof(char *));
@@ -65,7 +64,13 @@ int cas_put(const cas_registry_t *registry, const char *key, void *value, size_t
         fclose(fp);
         return -9;
     }
+    fclose(fp);
 
+    sprintf(complete_path, "%s/%s", output_path, "time.dat");
+    fp = fopen(complete_path, "wb");
+    if (!fp) return -1;
+    time_t now = time(NULL);
+    fprintf(fp, "%ld", (long)now);
     fclose(fp);
     return 0;
 }
@@ -290,6 +295,7 @@ static void free_path(fs_path_t *path) {
     free(path->p[1]);
     free(path->p[2]);
     free(path->p[3]);
+
     free(path);
 }
 

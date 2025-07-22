@@ -4,9 +4,16 @@
 
 #include "../include/clogger.h"
 #include "pod_cache.h"
+#include "server_tcp.h"
 
 
 int main(void) {
+    clog_init(LOG_LEVEL_DEBUG, "podcache.log");
+
+    tcp_server_start();
+}
+
+int test_cache_main(void) {
     clog_init(LOG_LEVEL_DEBUG, "clogger.log");
 
     log_info("PodCache - v-alpha-0.0.1");

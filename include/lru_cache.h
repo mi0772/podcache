@@ -14,6 +14,7 @@ typedef struct lru_node {
     char *key;
     void *value;
     size_t size;
+    time_t creation_time;
     struct lru_node *next;
     struct lru_node *prev;
 
@@ -34,8 +35,6 @@ typedef struct lru_cache {
     size_t current_bytes_size;
     size_t hash_table_size;
     pthread_mutex_t mutex;
-
-
 } lru_cache_t;
 
 lru_cache_t *lru_cache_create(size_t max_bytes_capacity);

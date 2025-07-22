@@ -23,7 +23,6 @@ static lru_node_t *create_node(const char *key, size_t value_size, void *value);
 static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node);
 static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node);
 static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node);
-//static void move_tail_to_disk(lru_cache_t *cache);
 static size_t calculate_hash_table_size(size_t max_bytes_capacity);
 
 /* =============================================
@@ -144,12 +143,12 @@ void lru_cache_destroy(lru_cache_t *cache) {
 static lru_node_t *create_node(const char *key, size_t value_size, void *value) {
     lru_node_t *new_lru_node = calloc(1, sizeof(lru_node_t));
     new_lru_node->key = strdup(key);
-
     new_lru_node->value = malloc(value_size+1);
     memcpy(new_lru_node->value, value, value_size);
     log_debug("PUT: storing '%.*s' (size: %zu)", (int)value_size, (char*)value, value_size);
     new_lru_node->size = value_size;
     new_lru_node->next = NULL;
+    new_lru_node->creation_time = time(NULL);
 
     return new_lru_node;
 }

@@ -21,7 +21,7 @@ typedef unsigned short u_short;
 typedef struct pod_cache {
     size_t total_capacity;
     size_t partition_capacity;
-    u_short partition_number;
+    u_short partition_count;
     lru_cache_t **partitions;
     cas_registry_t *cas_registry;
 } pod_cache_t;
