@@ -21,7 +21,6 @@
 #include "hash_func.h"
 
 
-
 #define CAS_REGISTRY_INITIAL_CAPACITY 100
 
 /* ========================================================
