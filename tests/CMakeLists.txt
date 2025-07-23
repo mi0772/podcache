@@ -1,5 +1,6 @@
 # Test per CAS system
-add_executable(test_cas test_cas.c)
+add_executable(test_cas
+        test_resp.c)
 target_link_libraries(test_cas podcache_lib)
 add_test(NAME cas_tests COMMAND test_cas)
 

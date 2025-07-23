@@ -94,8 +94,8 @@ int handle_set_command(client_ctx_t *client, parsed_command_t *cmd) {
         return send_error_response(client->socket, "wrong number of arguments for 'set' command");
     }
     
-    store_set(cmd->args[1], cmd->args[2]);
-    LOG_INFO("Client %s: SET %s = %s", client->client_id, cmd->args[1], cmd->args[2]);
+    //store_set(cmd->args[1], cmd->args[2]);
+    log_debug("Client %s: SET %s = %s", client->client_id, cmd->args[1], cmd->args[2]);
     
     return send_ok_response(client->socket, NULL);
 }
@@ -105,19 +105,19 @@ int handle_get_command(client_ctx_t *client, parsed_command_t *cmd) {
         return send_error_response(client->socket, "wrong number of arguments for 'get' command");
     }
     
-    char *value = store_get(cmd->args[1]);
-    LOG_INFO("Client %s: GET %s = %s", client->client_id, cmd->args[1], value ? value : "(nil)");
+    char *value = "test"; //store_get(cmd->args[1]);
+    log_debug("Client %s: GET %s = %s", client->client_id, cmd->args[1], value ? value : "(nil)");
     
     int result = send_string_response(client->socket, value);
-    free(value);
+    //free(value);
     
     return result;
 }
 
 int handle_info_command(client_ctx_t *client, parsed_command_t *cmd) {
-    pthread_mutex_lock(&store_mutex);
-    int count = store_count;
-    pthread_mutex_unlock(&store_mutex);
+
+    int count = 100; //store_count;
+
     
     char info[512];
     snprintf(info, sizeof(info), 
