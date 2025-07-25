@@ -24,6 +24,11 @@ typedef struct {
     size_t command_length;
 } resp_command_raw_t;
 
+typedef struct {
+    size_t len;
+    void *value;
+} resp_command_value_t;
+
 resp_command_raw_t resp_command_create(const char *command_raw);
 
 #endif //RESP_H

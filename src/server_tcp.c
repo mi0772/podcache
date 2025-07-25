@@ -14,48 +14,14 @@
 #include <unistd.h>
 
 #include "clogger.h"
+#include "pod_cache.h"
+#include "server_command.h"
 
 /* Global state */
 static volatile int server_running = 1;
 static int server_socket = -1;
 
-/* Command parsing */
-command_type_t parse_command_type(const char *cmd) {
-    if (strcasecmp(cmd, "PING") == 0) return CMD_PING;
-    if (strcasecmp(cmd, "SET") == 0)  return CMD_SET;
-    if (strcasecmp(cmd, "GET") == 0)  return CMD_GET;
-    if (strcasecmp(cmd, "QUIT") == 0) return CMD_QUIT;
-    if (strcasecmp(cmd, "INFO") == 0) return CMD_INFO;
-    return CMD_UNKNOWN;
-}
-
-int parse_command_line(const char *line, parsed_command_t *cmd) {
-    memset(cmd, 0, sizeof(parsed_command_t));
-    
-    char *line_copy = strdup(line);
-    char *token = strtok(line_copy, " \t\r\n");
-    
-    if (!token) {
-        free(line_copy);
-        return 0;
-    }
-    
-    cmd->type = parse_command_type(token);
-    cmd->args[cmd->argc++] = strdup(token);
-    
-    while ((token = strtok(NULL, " \t\r\n")) && cmd->argc < 8) {
-        cmd->args[cmd->argc++] = strdup(token);
-    }
-    
-    free(line_copy);
-    return 1;
-}
-
-void free_parsed_command(parsed_command_t *cmd) {
-    for (int i = 0; i < cmd->argc; i++) {
-        free(cmd->args[i]);
-    }
-}
+static pod_cache_t *cache;
 
 /* Protocol response helpers */
 int send_response(int socket, const char *format, ...) {
@@ -69,11 +35,11 @@ int send_response(int socket, const char *format, ...) {
 }
 
 int send_ok_response(int socket, const char *message) {
-    return send_response(socket, "+%s\r\n", message ? message : "OK");
+    return send_response(socket, "%s\r\n", message ? message : "OK");
 }
 
 int send_error_response(int socket, const char *error) {
-    return send_response(socket, "-ERR %s\r\n", error);
+    return send_response(socket, "KO %s\r\n", error);
 }
 
 int send_string_response(int socket, const char *str) {
@@ -85,30 +51,33 @@ int send_string_response(int socket, const char *str) {
 
 /* Command handlers */
 int handle_ping_command(client_ctx_t *client, parsed_command_t *cmd) {
-    const char *message = (cmd->argc > 1) ? cmd->args[1] : "PONG";
+    const char *message = "PONG\r\n";
     return send_ok_response(client->socket, message);
 }
 
 int handle_set_command(client_ctx_t *client, parsed_command_t *cmd) {
-    if (cmd->argc < 3) {
+    if (cmd->key_len <= 0 || cmd->value_len <= 0) {
         return send_error_response(client->socket, "wrong number of arguments for 'set' command");
     }
     
-    //store_set(cmd->args[1], cmd->args[2]);
-    log_debug("Client %s: SET %s = %s", client->client_id, cmd->args[1], cmd->args[2]);
+
+    log_debug("Client %s: SET %s = %s", client->client_id, cmd->key, cmd->value);
+    pod_cache_put(cache, cmd->key, cmd->value, cmd->value_len);
     
     return send_ok_response(client->socket, NULL);
 }
 
 int handle_get_command(client_ctx_t *client, parsed_command_t *cmd) {
-    if (cmd->argc < 2) {
+    if (cmd->key_len <= 0) {
         return send_error_response(client->socket, "wrong number of arguments for 'get' command");
     }
     
-    char *value = "test"; //store_get(cmd->args[1]);
-    log_debug("Client %s: GET %s = %s", client->client_id, cmd->args[1], value ? value : "(nil)");
-    
-    int result = send_string_response(client->socket, value);
+
+    log_debug("Client %s: GET %s", client->client_id, cmd->key);
+    void *value = NULL;
+    size_t value_size = 0;
+    pod_cache_get(cache, cmd->key, &value, &value_size );
+    int result = send_string_response(client->socket, (char *) value);
     //free(value);
     
     return result;
@@ -132,34 +101,33 @@ int handle_info_command(client_ctx_t *client, parsed_command_t *cmd) {
 
 /* Main command dispatcher */
 int handle_client_command(client_ctx_t *client, const char *line) {
-    parsed_command_t cmd;
-    
-    if (!parse_command_line(line, &cmd)) {
-        return send_error_response(client->socket, "empty command");
+    parsed_command_t *cmd = parse_command(line);
+
+    if (!cmd) {
+        return send_error_response(client->socket, "unknown command");
     }
-    
     int result = 0;
-    
-    switch (cmd.type) {
+
+    switch (cmd->command) {
         case CMD_PING:
-            result = handle_ping_command(client, &cmd);
+            result = handle_ping_command(client, cmd);
             break;
             
-        case CMD_SET:
-            result = handle_set_command(client, &cmd);
+        case CMD_PUT:
+            result = handle_set_command(client, cmd);
             break;
             
         case CMD_GET:
-            result = handle_get_command(client, &cmd);
+            result = handle_get_command(client, cmd);
             break;
             
         case CMD_INFO:
-            result = handle_info_command(client, &cmd);
+            result = handle_info_command(client, cmd);
             break;
             
         case CMD_QUIT:
             send_ok_response(client->socket, "BYE");
-            free_parsed_command(&cmd);
+            free_parsed_command(cmd);
             return -1;  // Signal to close connection
             
         case CMD_UNKNOWN:
@@ -168,7 +136,7 @@ int handle_client_command(client_ctx_t *client, const char *line) {
             break;
     }
     
-    free_parsed_command(&cmd);
+    free_parsed_command(cmd);
     return result;
 }
 
@@ -248,7 +216,19 @@ int tcp_server_start(void) {
     signal(SIGPIPE, SIG_IGN);  // Ignore broken pipe
     
     log_info("Starting PodCache Server v1.0.0");
-    
+
+    log_info("creating base cache with size %lu and %d partitions", MB_TO_BYTES(100), 3);
+    if (cache != NULL) {
+        log_warn("cache already exist, destroy it before creating a new onw");
+        pod_cache_destroy(cache);
+    }
+    cache = pod_cache_create(MB_TO_BYTES(100), 3);
+    if (cache)
+        log_info("base cache created");
+    else {
+        log_error("cannot create cache");
+        exit(9);
+    }
     // Create server socket
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1) {
@@ -326,6 +306,7 @@ int tcp_server_start(void) {
     // Cleanup
     log_info("Cleaning up resources...");
     // distruzione della cache
+    pod_cache_destroy(cache);
 
     close(server_socket);
     log_info("Server shutdown complete");

@@ -22,28 +22,6 @@ typedef struct {
     char client_id[64];
 } client_ctx_t;
 
-/* Protocol handlers */
-typedef enum {
-    CMD_UNKNOWN,
-    CMD_PING,
-    CMD_SET,
-    CMD_GET,
-    CMD_QUIT,
-    CMD_INFO
-} command_type_t;
-
-typedef struct {
-    command_type_t type;
-    char *args[8];
-    int argc;
-} parsed_command_t;
-
-typedef struct kv_node {
-    char *key;
-    char *value;
-    struct kv_node *next;
-} kv_node_t;
-
 int tcp_server_start(void);
 
 #endif //SERVER_TCP_H
