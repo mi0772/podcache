@@ -1,34 +1,38 @@
 /**
  * Project: PodCache
  * Author: Carlo Di Giuseppe
- * Date: 22/07/25
+ * Date: 26/07/25
  * License: MIT
  */
  
 #ifndef RESP_H
 #define RESP_H
-#include <openssl/bio.h>
+#include <stdbool.h>
 
-typedef enum resp_type {
-    RESP_ARRAY,
-    RESP_ERROR,
-    RESP_LONG,
-    RESP_BULK_STRING,
+typedef enum {
     RESP_SIMPLE_STRING,
-    RESP_UNKNOW
-} resp_type_t;
+    RESP_SIMPLE_ERROR,
+    RESP_INTEGER,
+    RESP_BULK_STRING,
+    RESP_ARRAY,
+    RESP_NULL,
+    RESP_BOOL,
+    RESP_DOUBLE,
+    RESP_BIG_NUMBER
+} resp_type_e;
 
 typedef struct {
-    char *command;
-    char *current_position;
-    size_t command_length;
-} resp_command_raw_t;
+    char *command; // command received from resp
+    char *command_pos; // pointer to current command position
+} resp_command_t;
 
 typedef struct {
-    size_t len;
     void *value;
-} resp_command_value_t;
+    bool success;
+} parse_result_t;
 
-resp_command_raw_t resp_command_create(const char *command_raw);
+char resp_first_byte(resp_type_e resp_type);
+resp_type_e resp_command_type(char p);
+void parse_resp_command(resp_command_t *resp_command);
 
 #endif //RESP_H

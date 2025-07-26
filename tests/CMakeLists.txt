@@ -5,6 +5,8 @@ add_executable(test_cas
         ../include/b64.h
         ../src/server_command.c
         ../include/server_command.h
+        ../src/resp.c
+        ../include/resp.h
 )
 target_link_libraries(test_cas podcache_lib)
 add_test(NAME cas_tests COMMAND test_cas)

@@ -9,6 +9,8 @@
 #define SERVER_TCP_H
 #include <netinet/in.h>
 
+#include "pod_cache.h"
+
 #define BUFFER_SIZE         4096
 #define MAX_PENDING_CONNS   128
 #define DEFAULT_PORT        6379
@@ -21,6 +23,11 @@ typedef struct {
     pthread_t thread_id;
     char client_id[64];
 } client_ctx_t;
+
+typedef struct {
+    client_ctx_t *client_ctx;
+    pod_cache_t *pod_cache;
+} server_thread_p;
 
 int tcp_server_start(void);
 

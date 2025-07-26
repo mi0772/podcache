@@ -42,12 +42,12 @@ add_library(podcache_lib
         include/cas.h
         src/clogger.c
         include/clogger.h
-        src/resp.c
-        include/resp.h
         src/b64.c
         include/b64.h
         src/server_command.c
         include/server_command.h
+        src/resp.c
+        include/resp.h
 )
 
 target_include_directories(podcache_lib PUBLIC include)
@@ -68,12 +68,12 @@ add_executable(podcache src/main.c
         include/cas.h
         src/server_tcp.c
         include/server_tcp.h
-        src/resp.c
-        include/resp.h
         src/b64.c
         include/b64.h
         src/server_command.c
         include/server_command.h
+        src/resp.c
+        include/resp.h
 )
 target_link_libraries(podcache podcache_lib)
 

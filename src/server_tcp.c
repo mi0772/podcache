@@ -21,8 +21,6 @@
 static volatile int server_running = 1;
 static int server_socket = -1;
 
-static pod_cache_t *cache;
-
 /* Protocol response helpers */
 int send_response(int socket, const char *format, ...) {
     char buffer[BUFFER_SIZE];
@@ -50,24 +48,23 @@ int send_string_response(int socket, const char *str) {
 }
 
 /* Command handlers */
-int handle_ping_command(client_ctx_t *client, parsed_command_t *cmd) {
+int handle_ping_command(client_ctx_t *client, command_t *cmd) {
     const char *message = "PONG\r\n";
     return send_ok_response(client->socket, message);
 }
 
-int handle_set_command(client_ctx_t *client, parsed_command_t *cmd) {
-    if (cmd->key_len <= 0 || cmd->value_len <= 0) {
+int handle_set_command(client_ctx_t *client, pod_cache_t *cache, command_t *cmd) {
+    if (cmd->key_size <= 0 || cmd->value_size <= 0) {
         return send_error_response(client->socket, "wrong number of arguments for 'set' command");
     }
-    
 
-    log_debug("Client %s: SET %s = %s", client->client_id, cmd->key, cmd->value);
+    log_debug("client %s: SET %s = %s", client->client_id, cmd->key, cmd->value);
     pod_cache_put(cache, cmd->key, cmd->value, cmd->value_len);
     
     return send_ok_response(client->socket, NULL);
 }
 
-int handle_get_command(client_ctx_t *client, parsed_command_t *cmd) {
+int handle_get_command(client_ctx_t *client, pod_cache_t *cache, parsed_command_t *cmd) {
     if (cmd->key_len <= 0) {
         return send_error_response(client->socket, "wrong number of arguments for 'get' command");
     }
@@ -83,7 +80,7 @@ int handle_get_command(client_ctx_t *client, parsed_command_t *cmd) {
     return result;
 }
 
-int handle_info_command(client_ctx_t *client, parsed_command_t *cmd) {
+int handle_info_command(client_ctx_t *client, pod_cache_t *cache, parsed_command_t *cmd) {
 
     int count = 100; //store_count;
 
@@ -100,7 +97,7 @@ int handle_info_command(client_ctx_t *client, parsed_command_t *cmd) {
 }
 
 /* Main command dispatcher */
-int handle_client_command(client_ctx_t *client, const char *line) {
+int handle_client_command(client_ctx_t *client, pod_cache_t *cache, const char *line) {
     parsed_command_t *cmd = parse_command(line);
 
     if (!cmd) {
@@ -114,15 +111,15 @@ int handle_client_command(client_ctx_t *client, const char *line) {
             break;
             
         case CMD_PUT:
-            result = handle_set_command(client, cmd);
+            result = handle_set_command(client, cache, cmd);
             break;
             
         case CMD_GET:
-            result = handle_get_command(client, cmd);
+            result = handle_get_command(client, cache, cmd);
             break;
             
-        case CMD_INFO:
-            result = handle_info_command(client, cmd);
+        case CMD_STAT:
+            result = handle_info_command(client, cache, cmd);
             break;
             
         case CMD_QUIT:
@@ -142,19 +139,18 @@ int handle_client_command(client_ctx_t *client, const char *line) {
 
 /* Client thread handler */
 void* handle_client_thread(void *arg) {
-    client_ctx_t *client = (client_ctx_t*)arg;
+    server_thread_p *params = (server_thread_p*)arg;
+    client_ctx_t *client = params->client_ctx;
+    pod_cache_t *cache = params->pod_cache;
+
     char buffer[BUFFER_SIZE];
     char line_buffer[MAX_LINE_LENGTH];
     int line_pos = 0;
     ssize_t bytes_received;
     
-    log_info("Client %s connected", client->client_id);
+    log_debug("client %s connected", client->client_id);
     
-    // Send welcome message
-    send_ok_response(client->socket, "PodCache Server Ready");
-    
-    while (server_running && 
-           (bytes_received = recv(client->socket, buffer, sizeof(buffer) - 1, 0)) > 0) {
+    while (server_running && (bytes_received = recv(client->socket, buffer, sizeof(buffer) - 1, 0)) > 0) {
         
         for (int i = 0; i < bytes_received; i++) {
             char c = buffer[i];
@@ -164,7 +160,7 @@ void* handle_client_thread(void *arg) {
                     line_buffer[line_pos] = '\0';
                     
                     // Process the command
-                    if (handle_client_command(client, line_buffer) < 0) {
+                    if (handle_client_command(client, cache, line_buffer) < 0) {
                         goto cleanup;  // Client requested disconnect
                     }
                     
@@ -204,6 +200,25 @@ int get_server_port() {
     return (port > 0 && port <= 65535) ? port : DEFAULT_PORT;
 }
 
+pod_cache_t *cache_init() {
+    log_info("creating main cache with this configuration:");
+    unsigned int cache_size_p = getenv("PODCACHE_SIZE");
+    if (!cache_size_p) cache_size_p = 100;
+
+    unsigned short partitions_p = getenv("PODCACHE_PARTITIONS");
+    if (!partitions_p) partitions_p = 1;
+
+    log_info("ram size in mb : %ud", cache_size_p);
+    log_info("partitions     : %ud", partitions_p);
+
+    pod_cache_t *c = pod_cache_create(MB_TO_BYTES(cache_size_p),  partitions_p);
+    if (!c) {
+        log_error("impossibile creare la main cache");
+        return NULL;
+    }
+    return c;
+}
+
 /* Main server loop */
 int tcp_server_start(void) {
     struct sockaddr_in server_addr, client_addr;
@@ -215,20 +230,14 @@ int tcp_server_start(void) {
     signal(SIGTERM, signal_handler);
     signal(SIGPIPE, SIG_IGN);  // Ignore broken pipe
     
-    log_info("Starting PodCache Server v1.0.0");
+    log_info("starting PodCache Server v1.0.0");
 
-    log_info("creating base cache with size %lu and %d partitions", MB_TO_BYTES(100), 3);
-    if (cache != NULL) {
-        log_warn("cache already exist, destroy it before creating a new onw");
-        pod_cache_destroy(cache);
-    }
-    cache = pod_cache_create(MB_TO_BYTES(100), 3);
-    if (cache)
-        log_info("base cache created");
-    else {
+    pod_cache_t *cache = cache_init();
+    if (!cache) {
         log_error("cannot create cache");
         exit(9);
     }
+
     // Create server socket
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1) {
@@ -292,7 +301,12 @@ int tcp_server_start(void) {
                 inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
         
         // Create thread for client
-        if (pthread_create(&client->thread_id, NULL, handle_client_thread, client) != 0) {
+        server_thread_p pthread_param = {
+            .client_ctx = client,
+            .pod_cache = cache
+        };
+
+        if (pthread_create(&client->thread_id, NULL, handle_client_thread, &pthread_param) != 0) {
             log_error("Failed to create thread for client %s", client->client_id);
             close(client_socket);
             free(client);

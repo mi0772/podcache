@@ -4,92 +4,48 @@
  * Date: 22/07/25
  * License: MIT
  */
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "resp.h"
 
-int parse_length(char *start, char *end) {
-    int counter = 0;
-    char len[10] = {'\0'};
-    while (start < end) {
-        len[counter++] = *start;
-        start++;
-    }
-    return atoi(len);
-}
+int main(void) {
+    printf("test resp command\n");
 
-char *parse_value(char *start, int len) {
-    char *value = malloc(len + 1);  // +1 per null terminator
-    if (!value) return NULL;
+    //simple string
+    char *command = "+OK\r\n";
+    printf("command is %s", command);
+    resp_command_t resp_command = {
+        .command = strdup(command)
+    };
+    resp_command.command_pos = resp_command.command;
 
-    memcpy(value, start, len);      // Più efficiente di loop
-    value[len] = '\0';              // Null terminator!
+    parse_resp_command(&resp_command);
 
-    return value;
-}
+    // test error
+    char *command_error = "-Error message\r\n";
+    printf("command is %s", command);
+    resp_command.command = strdup(command_error);
+    resp_command.command_pos = resp_command.command;
 
-resp_command_value_t *parse_bulk_string(resp_command_raw_t *command_raw) {
-
-    char *p = command_raw->current_position;
-    if (*p != '$') return NULL;
-
-    resp_command_value_t *v = malloc(sizeof(resp_command_value_t));
-
-    p++;
-
-    char *s = strchr(p, '\r');
-    command_raw->current_position = s + 2;
-
-    const int len = parse_length(p, s);
-
-    p = command_raw->current_position;
-    s = strchr(p+1, '\r');
-    command_raw->current_position = s + 2;
-    char *value = parse_value(p, len);
-
-    command_raw->current_position = s + 2;
-
-    if (len != strlen(value)) return NULL;
-
-    v->len = len;
-    v->value = malloc(v->len);
-    strcpy(v->value, value);
-    return v;
-}
-
-int parse_array(resp_command_raw_t *command_raw) {
-
-    char *p = command_raw->current_position;
-    if (*p != '*') return -1;
-    p++;
-
-    char *s = strchr(p+1, '\r');
-    command_raw->current_position = s + 2;
-
-    return parse_length(p, s);
-}
-
-int main2(void) {
-    printf("test resp\n");
-
-    //resp_command_raw_t command_raw = resp_command_create("*31\r\n$34\r\nSET\r\n$5\r\nmykey\r\n$5\r\nvalue\r\n");
-    resp_command_raw_t command_raw = resp_command_create("$3\r\nSET\r\n");
-    printf("pointer of command_raw.command = %p\n", command_raw.command);
-    printf("pointer of command_raw.p = %p\n", command_raw.current_position);
-    printf("lunghezza del comando : %lu\n", command_raw.command_length);
+    parse_resp_command(&resp_command);
 
 
-    resp_command_value_t *output = parse_bulk_string(&command_raw);
-    printf("parsing di %s = %s\n", "$3\\r\\nSET\\r\\n", (char *)output->value);
+    // test integer
+    char *command_int = ":+32\r\n";
+    printf("command is %s", command);
+    resp_command.command = strdup(command_int);
+    resp_command.command_pos = resp_command.command;
 
-    resp_command_raw_t command_a = resp_command_create("*3\r\n$3\r\nSET\r\n$5\r\nmykey\r\n$5\r\nvalue\r\n");
-    int len_array = parse_array(&command_a);
-    printf("parsing di array di %d elementi\n", len_array);
-    for (int i=0 ; i < len_array ; i++) {
-        resp_command_value_t *o = parse_bulk_string(&command_a);
-        printf("[%d] value = %s di lunghezza %lu\n", i, (char *)o->value, o->len);
-        free(o);
+    parse_resp_command(&resp_command);
 
-    }
+    // test bulk string
+
+    char *command_bs = "$5\r\nhello\r\n";
+    printf("command is %s", command);
+    resp_command.command = strdup(command_bs);
+    resp_command.command_pos = resp_command.command;
+
+    parse_resp_command(&resp_command);
 }
