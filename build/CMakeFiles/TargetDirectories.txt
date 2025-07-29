@@ -1,0 +1,9 @@
+/Users/carlo/Progetti/github/podcache/build/CMakeFiles/podcache_lib.dir
+/Users/carlo/Progetti/github/podcache/build/CMakeFiles/podcache.dir
+/Users/carlo/Progetti/github/podcache/build/CMakeFiles/test.dir
+/Users/carlo/Progetti/github/podcache/build/CMakeFiles/edit_cache.dir
+/Users/carlo/Progetti/github/podcache/build/CMakeFiles/rebuild_cache.dir
+/Users/carlo/Progetti/github/podcache/build/tests/CMakeFiles/test_cas.dir
+/Users/carlo/Progetti/github/podcache/build/tests/CMakeFiles/test.dir
+/Users/carlo/Progetti/github/podcache/build/tests/CMakeFiles/edit_cache.dir
+/Users/carlo/Progetti/github/podcache/build/tests/CMakeFiles/rebuild_cache.dir
