@@ -40,6 +40,7 @@ typedef struct lru_cache {
 lru_cache_t *lru_cache_create(size_t max_bytes_capacity);
 int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value_size);
 int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *value_size);
+int lru_cache_evict(lru_cache_t *cache, const char *key);
 void lru_cache_destroy(lru_cache_t *cache);
 lru_node_t *lru_cache_get_tail_node(lru_cache_t *cache);
 int lru_cache_remove_tail(lru_cache_t *cache);

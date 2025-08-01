@@ -39,6 +39,7 @@ static int handle_get(client_ctx_t *client, pod_cache_t *cache, resp_command_t *
 static int handle_quit(client_ctx_t *client, pod_cache_t *cache, resp_command_t *cmd);
 static int handle_client_cmd(client_ctx_t *client, pod_cache_t *cache, resp_command_t *cmd);
 static int handle_incr(client_ctx_t *client, pod_cache_t *cache, resp_command_t *cmd);
+static int handle_del(client_ctx_t *client, pod_cache_t *cache, resp_command_t *cmd);
 static int dispatch_command(client_ctx_t *client, pod_cache_t *cache, resp_command_t *cmd);
 static void buffer_init(command_buffer_t *buf);
 static bool buffer_append(command_buffer_t *buf, const void *data, size_t len);
@@ -63,6 +64,8 @@ static const command_handler_t command_handlers[] = {
     {RESP_QUIT, "QUIT", handle_quit},
     {RESP_CLIENT, "CLIENT", handle_client_cmd},
     {RESP_INCR, "INCR", handle_incr},
+    { RESP_DEL, "DEL", handle_del},
+    {RESP_UNLINK, "UNLINK", handle_del},
     {RESP_UNKNOW, NULL, NULL} // Sentinel
 };
 
@@ -241,6 +244,16 @@ static int handle_incr(client_ctx_t *client, pod_cache_t *cache, resp_command_t 
 
     pod_cache_put(cache, key, buffer, strlen(buffer));
     return send_integer_response(client->socket, val);
+}
+
+static int handle_del(client_ctx_t *client, pod_cache_t *cache, resp_command_t *cmd) {
+    if (cmd->arg_count < 1) return send_error_response(client->socket,"wrong number of arguments for 'DEL' or 'UNLINK' command");
+
+    int evict_result = pod_cache_evict(cache, cmd->args[0]);
+    if (evict_result != -1) return send_integer_response(client->socket, evict_result);
+
+    return send_error_response(client->socket, "error");
+
 }
 
 static int handle_set(client_ctx_t *client, pod_cache_t *cache, resp_command_t *cmd) {

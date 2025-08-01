@@ -35,7 +35,8 @@ typedef enum {
     RESP_QUIT,
     RESP_CLIENT,
     RESP_UNKNOW,
-    RESP_INCR
+    RESP_INCR,
+    RESP_UNLINK
 } resp_command_e;
 
 typedef struct {

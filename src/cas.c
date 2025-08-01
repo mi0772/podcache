@@ -100,10 +100,15 @@ int cas_evict(const char *key, cas_registry_t *registry) {
         "%s/%s"
     };
 
+    int founded = 1;
     for (int i = 0; i < 5; i++) {
         snprintf(path, sizeof(path), patterns[i], registry->base_path,
                 fs_path->p[0], fs_path->p[1], fs_path->p[2], fs_path->p[3]);
-        remove_dir(path);
+        if (remove_dir(path) == -1) founded = 0;
+    }
+    if (founded == 0) {
+        free(fs_path);
+        return -1;
     }
 
     char p[512] = {'\0'};

@@ -31,5 +31,6 @@ pod_cache_t *pod_cache_create(size_t capacity, u_short partitions);
 void pod_cache_destroy(pod_cache_t *pod_cache);
 int pod_cache_put(pod_cache_t *cache, const char *key, void *value, size_t value_size);
 int pod_cache_get(pod_cache_t *cache, const char *key, void **out_value, size_t *out_value_size);
+int pod_cache_evict(pod_cache_t *cache, const char *key);
 
 #endif //CACHE_H

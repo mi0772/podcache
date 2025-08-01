@@ -12,9 +12,7 @@ if(APPLE)
             /usr/local/opt/openssl
     )
 elseif(UNIX AND NOT APPLE)
-    # Linux - di solito OpenSSL è già nei path standard
-    # Ma puoi specificare percorsi custom se necessario
-    # set(OPENSSL_ROOT_DIR /usr/local/ssl)
+
 endif()
 
 find_package(OpenSSL REQUIRED)
@@ -42,8 +40,6 @@ add_library(podcache_lib
         include/cas.h
         src/clogger.c
         include/clogger.h
-        src/b64.c
-        include/b64.h
         src/resp_parser.c
         include/resp_parser.h
 )
@@ -66,8 +62,6 @@ add_executable(podcache src/main.c
         include/cas.h
         src/server_tcp.c
         include/server_tcp.h
-        src/b64.c
-        include/b64.h
         src/resp_parser.c
         include/resp_parser.h
 )

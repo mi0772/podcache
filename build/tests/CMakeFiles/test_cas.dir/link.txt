@@ -1,1 +1,0 @@
-/usr/bin/cc  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/test_cas.dir/test_resp.c.o CMakeFiles/test_cas.dir/__/src/b64.c.o CMakeFiles/test_cas.dir/__/src/resp_parser.c.o -o test_cas  ../libpodcache_lib.a /opt/homebrew/opt/openssl@3/lib/libssl.dylib /opt/homebrew/opt/openssl@3/lib/libcrypto.dylib

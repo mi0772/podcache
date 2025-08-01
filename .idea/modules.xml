@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/PodCache.iml" filepath="$PROJECT_DIR$/.idea/PodCache.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/podcache.iml" filepath="$PROJECT_DIR$/.idea/podcache.iml" />
     </modules>
   </component>
 </project>

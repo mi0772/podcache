@@ -1,8 +1,6 @@
 # Test per CAS system
 add_executable(test_cas
         test_resp.c
-        ../src/b64.c
-        ../include/b64.h
         ../src/resp_parser.c
         ../include/resp_parser.h
 )

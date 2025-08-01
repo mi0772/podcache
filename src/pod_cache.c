@@ -99,6 +99,31 @@ int pod_cache_get(pod_cache_t *cache, const char *key, void **out_value, size_t 
     return partition_index;
 }
 
+int pod_cache_evict(pod_cache_t *cache, const char *key) {
+    if (!cache) return -1;
+
+    int partition_index = get_partition(hash(key), cache->partition_count);
+    int memory_evict_result = lru_cache_evict(cache->partitions[partition_index], key);
+    if (memory_evict_result == -100) {
+        log_debug("%s not found in memory cache, try to remove it from cas", key);
+        // non trovata in memoria, provo a cancellarla da filesystem
+        int cas_evict_result = cas_evict(key, cache->cas_registry);
+        if (cas_evict_result == 0) {
+            log_info("%s was removed from cas");
+            return 1;
+        }
+        if (cas_evict_result == -1) {
+            log_warn("%s was not present into cas");
+            return 0;
+        }
+    }
+    if (memory_evict_result == 0) {
+        log_info("%s was removed from memory cache", key);
+        return 1;
+    }
+    return 0;
+}
+
 
 void pod_cache_destroy(pod_cache_t *pod_cache) {
     if (!pod_cache) return;

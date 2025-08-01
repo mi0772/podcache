@@ -72,6 +72,68 @@ int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *val
     return -100;
 }
 
+int lru_cache_evict(lru_cache_t *cache, const char *key) {
+    if (!cache) return -1;
+
+    uint32_t hash = hash_key(key, cache->hash_table_size);
+    hash_node_t *current = cache->buckets[hash];
+    hash_node_t *prev_hash = NULL;
+
+    // Cerca nella hash table
+    while (current) {
+        if (strcmp(current->key, key) == 0) {
+            lru_node_t *node_to_remove = current->node;
+
+            // rimozione hash dall'hash table
+            if (prev_hash) {
+                prev_hash->next = current->next;
+            } else {
+                cache->buckets[hash] = current->next;
+            }
+
+            // rimozione dalla linkedlist lru
+            if (cache->head == cache->tail) {
+                // Caso 1: Unico elemento nella cache
+                cache->head = NULL;
+                cache->tail = NULL;
+            }
+            else if (node_to_remove == cache->head) {
+                // elemento di test
+                cache->head = node_to_remove->next;
+                cache->head->prev = NULL;
+            }
+            else if (node_to_remove == cache->tail) {
+                // elemento di coda
+                cache->tail = node_to_remove->prev;
+                cache->tail->next = NULL;
+            }
+            else {
+                // elemento non testa e non coda
+                node_to_remove->prev->next = node_to_remove->next;
+                node_to_remove->next->prev = node_to_remove->prev;
+            }
+
+            // update contatore cache size
+            cache->current_bytes_size -= node_to_remove->size;
+
+            // memory free
+            free(current->key);
+            free(current);
+            free(node_to_remove->key);
+            free(node_to_remove->value);
+            free(node_to_remove);
+
+            log_debug("EVICT: removed key '%s'", key);
+            return 0;
+        }
+        prev_hash = current;
+        current = current->next;
+    }
+
+    // elemento non trovato
+    return -100;
+}
+
 int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value_size) {
     if (!cache) return -1;
 
