@@ -1,17 +1,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 #include "../include/clogger.h"
-#include "pod_cache.h"
-#include "server_tcp.h"
-
-
+#include "../include/pod_cache.h"
+#include "../include/server_tcp.h"
 
 int main(void) {
-    clog_init(LOG_LEVEL_DEBUG, "podcache.log");
+    clog_init(LOG_LEVEL_INFO, "podcache.log");
+    log_info("PodCache server starting up...");
 
+    log_debug("Initializing TCP server");
     tcp_server_start();
+
+    log_info("PodCache server shutdown complete");
+    return 0;
 }
 
 int test_cache_main(void) {
@@ -30,7 +32,7 @@ int test_cache_main(void) {
     size_t value_size = 0;
     if (pod_cache_get(pod_cache_g, "carlo", &value, &value_size) == 0) {
         log_info("carlo found");
-        log_info("carlo value is %s", (char *) value);
+        log_info("carlo value is %s", (char *)value);
         free(value);
     }
     pod_cache_destroy(pod_cache_g);
@@ -54,14 +56,15 @@ int test_cache_main(void) {
                  pod_cache->partitions[latest_partition]->max_bytes_capacity);
     } while (pod_cache->partitions[latest_partition]->max_bytes_capacity >
              (pod_cache->partitions[latest_partition]->current_bytes_size + strlen(v)));
-    log_info("memoria terminata sulla partizione %d provo a scrivere ulteriore record", latest_partition);
+    log_info("memoria terminata sulla partizione %d provo a scrivere ulteriore record",
+             latest_partition);
     pod_cache_put(pod_cache, "test_finale", "test_finale", strlen("test_finale"));
 
     log_info("get test_1 che dovrebbe essere ormai su disco");
 
     if (pod_cache_get(pod_cache, "test_1", &value, &value_size) == 0) {
         log_info("carlo found");
-        log_info("carlo value is %s", (char *) value);
+        log_info("carlo value is %s", (char *)value);
         free(value);
     }
 
@@ -69,7 +72,7 @@ int test_cache_main(void) {
 
     if (pod_cache_get(pod_cache, "test_1", &value, &value_size) == 0) {
         log_info("carlo found");
-        log_info("carlo value is %s", (char *) value);
+        log_info("carlo value is %s", (char *)value);
         free(value);
     }
     pod_cache_destroy(pod_cache);

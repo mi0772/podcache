@@ -18,6 +18,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "../include/clogger.h"
 #include "../include/hash_func.h"
 
 #define CAS_REGISTRY_INITIAL_CAPACITY 100
@@ -40,44 +41,76 @@ int cleanup(const char *path);
  * ============================================= */
 
 cas_registry_t *cas_create_registry() {
+    log_debug("Creating CAS registry");
 
     cas_registry_t *registry = malloc(sizeof(cas_registry_t));
-    if (!registry) return NULL;
+    if (!registry) {
+        log_error("Failed to allocate memory for CAS registry");
+        return NULL;
+    }
 
     generate_base_path(registry->base_path);
+    log_debug("CAS base path set to: %s", registry->base_path);
 
     registry->entries = malloc(CAS_REGISTRY_INITIAL_CAPACITY * sizeof(char *));
     if (!registry->entries) {
+        log_error("Failed to allocate memory for CAS registry entries");
         free(registry);
         return NULL;
     }
 
     registry->capacity = CAS_REGISTRY_INITIAL_CAPACITY;
     registry->entries_count = 0;
+
+    log_info("CAS registry created successfully with initial capacity: %d",
+             CAS_REGISTRY_INITIAL_CAPACITY);
     return registry;
 }
 
 int cas_put(const cas_registry_t *registry, const char *key, void *value, size_t value_size,
             char *output_path) {
-    if (cas_create_directory(registry, key, output_path) != 0) return -1;
+    if (!registry || !key || !value || !output_path) {
+        log_error("Invalid parameters in cas_put");
+        return -1;
+    }
+
+    log_debug("CAS PUT: storing key '%s', size: %zu bytes", key, value_size);
+
+    if (cas_create_directory(registry, key, output_path) != 0) {
+        log_error("Failed to create directory structure for key '%s'", key);
+        return -1;
+    }
+
+    log_debug("CAS PUT: created directory structure at: %s", output_path);
 
     // ho il path, ci devo scrivere dentro il contenuto di value
     char complete_path[512];
     sprintf(complete_path, "%s/%s", output_path, "value.dat");
     FILE *fp = fopen(complete_path, "wb");
-    if (!fp) return -1;
+    if (!fp) {
+        log_error("Failed to open file for writing: %s", complete_path);
+        return -1;
+    }
     if (fwrite(value, 1, value_size, fp) != value_size) {
+        log_error("Failed to write complete data to file: %s", complete_path);
         fclose(fp);
         return -9;
     }
     fclose(fp);
+    log_debug("CAS PUT: successfully wrote value data to: %s", complete_path);
 
     sprintf(complete_path, "%s/%s", output_path, "time.dat");
     fp = fopen(complete_path, "wb");
-    if (!fp) return -1;
+    if (!fp) {
+        log_error("Failed to open timestamp file for writing: %s", complete_path);
+        return -1;
+    }
     time_t now = time(NULL);
     fprintf(fp, "%ld", (long)now);
     fclose(fp);
+    log_debug("CAS PUT: successfully wrote timestamp to: %s", complete_path);
+
+    log_info("CAS PUT: successfully stored key '%s' at: %s", key, output_path);
     return 0;
 }
 
@@ -91,6 +124,13 @@ static int remove_dir(char *dir) {
 }
 
 int cas_evict(const char *key, cas_registry_t *registry) {
+    if (!key || !registry) {
+        log_error("Invalid parameters in cas_evict");
+        return -1;
+    }
+
+    log_debug("CAS EVICT: attempting to remove key '%s'", key);
+
     char hash[65] = {'\0'};
     char path[512] = {'\0'};
 
@@ -105,9 +145,14 @@ int cas_evict(const char *key, cas_registry_t *registry) {
     for (int i = 0; i < 5; i++) {
         snprintf(path, sizeof(path), patterns[i], registry->base_path, fs_path->p[0], fs_path->p[1],
                  fs_path->p[2], fs_path->p[3]);
-        if (remove_dir(path) == -1) founded = 0;
+        log_debug("CAS EVICT: removing path: %s", path);
+        if (remove_dir(path) == -1) {
+            log_debug("CAS EVICT: failed to remove path: %s", path);
+            founded = 0;
+        }
     }
     if (founded == 0) {
+        log_warn("CAS EVICT: failed to remove some paths for key '%s'", key);
         free(fs_path);
         return -1;
     }
@@ -115,27 +160,44 @@ int cas_evict(const char *key, cas_registry_t *registry) {
     char p[512] = {'\0'};
     sprintf(p, "%s/%s/%s/%s/%s", registry->base_path, fs_path->p[0], fs_path->p[1], fs_path->p[2],
             fs_path->p[3]);
-    printf("p = %s\n", p);
+    log_debug("CAS EVICT: removing entry from registry: %s", p);
+
     for (int i = 0; i < registry->entries_count; i++) {
         if (strcmp(registry->entries[i], p) == 0) {
+            log_debug("CAS EVICT: found registry entry at index %d", i);
             for (int j = i; j < registry->entries_count - 1; j++) {
                 registry->entries[j] = registry->entries[j + 1];
             }
             free(registry->entries[registry->entries_count - 1]);
             registry->entries_count--;
+            log_debug("CAS EVICT: removed entry from registry, new count: %zu",
+                      registry->entries_count);
             break;
         }
     }
 
     free(fs_path);
+    log_info("CAS EVICT: successfully removed key '%s'", key);
     return 0;
 }
 
 int cas_add_to_registry(cas_registry_t *registry, char *path) {
+    if (!registry || !path) {
+        log_error("Invalid parameters in cas_add_to_registry");
+        return -1;
+    }
+
+    log_debug("CAS REGISTRY: adding path to registry: %s", path);
+
     if (registry->entries_count + 1 >= registry->capacity) {
+        size_t old_capacity = registry->capacity;
         registry->capacity *= 2;
+        log_debug("CAS REGISTRY: expanding capacity from %zu to %zu", old_capacity,
+                  registry->capacity);
+
         char **new_entries = realloc(registry->entries, registry->capacity * sizeof(char *));
         if (!new_entries) {
+            log_error("Failed to reallocate registry entries");
             return -1; // Errore di allocazione
         }
         registry->entries = new_entries;
@@ -143,24 +205,35 @@ int cas_add_to_registry(cas_registry_t *registry, char *path) {
 
     registry->entries[registry->entries_count] = malloc(strlen(path) + 1); // +1 per '\0'
     if (!registry->entries[registry->entries_count]) {
+        log_error("Failed to allocate memory for registry entry");
         return -1; // Errore di allocazione
     }
     strcpy(registry->entries[registry->entries_count], path);
     registry->entries_count++;
+
+    log_debug("CAS REGISTRY: successfully added entry, total count: %zu", registry->entries_count);
     return 0;
 }
 
 void cas_registry_destroy(cas_registry_t *registry) {
-    if (!registry) return;
+    if (!registry) {
+        log_warn("Attempted to destroy NULL CAS registry");
+        return;
+    }
+
+    log_info("Destroying CAS registry with %zu entries", registry->entries_count);
 
     if (registry->entries != NULL) {
         // Prima libera ogni singola stringa
+        log_debug("CAS REGISTRY: cleaning up %zu entries", registry->entries_count);
         for (size_t i = 0; i < registry->entries_count; i++) {
             if (registry->entries[i] != NULL) {
                 // TODO: rimuovi il file se esistente
+                log_debug("CAS REGISTRY: freeing entry %zu: %s", i, registry->entries[i]);
                 free(registry->entries[i]); // libera la stringa
             }
         }
+        log_debug("CAS REGISTRY: cleaning up base path: %s", registry->base_path);
         cleanup(registry->base_path);
         // Poi libera l'array di puntatori
         free(registry->entries);
@@ -168,6 +241,7 @@ void cas_registry_destroy(cas_registry_t *registry) {
 
     // Infine libera la struct
     free(registry);
+    log_info("CAS registry destroyed successfully");
 }
 
 /* si usa con :
@@ -176,6 +250,13 @@ void cas_registry_destroy(cas_registry_t *registry) {
     int result = cas_get("my_key", &data, &size);
 */
 int cas_get(const cas_registry_t *registry, const char *key, void **buffer, size_t *actual_size) {
+    if (!registry || !key || !buffer || !actual_size) {
+        log_error("Invalid parameters in cas_get");
+        return -1;
+    }
+
+    log_debug("CAS GET: searching for key '%s'", key);
+
     char hash[65] = {'\0'};
     sha256_string(key, hash);
     fs_path_t *fs_path = create_fs_path(hash);
@@ -183,16 +264,22 @@ int cas_get(const cas_registry_t *registry, const char *key, void **buffer, size
     char complete_path[512];
     sprintf(complete_path, "%s/%s", path, "value.dat");
 
+    log_debug("CAS GET: looking for file at: %s", complete_path);
+
     struct stat st;
     if (stat(complete_path, &st) != 0) {
+        log_debug("CAS GET: file not found for key '%s' at path: %s", key, complete_path);
         free_path(fs_path);
         free(path);
         return -1;
     }
 
     size_t file_size = st.st_size;
+    log_debug("CAS GET: found file for key '%s', size: %zu bytes", key, file_size);
+
     *buffer = malloc(file_size);
     if (!*buffer) {
+        log_error("Memory allocation failed for key '%s' (size: %zu)", key, file_size);
         free_path(fs_path);
         free(path);
         return -1; // Errore di allocazione
@@ -200,6 +287,7 @@ int cas_get(const cas_registry_t *registry, const char *key, void **buffer, size
 
     FILE *fp = fopen(complete_path, "rb");
     if (!fp) {
+        log_error("Failed to open file for reading: %s", complete_path);
         free(*buffer);
         free_path(fs_path);
         free(path);
@@ -208,9 +296,12 @@ int cas_get(const cas_registry_t *registry, const char *key, void **buffer, size
 
     size_t read_size = fread(*buffer, 1, file_size, fp);
     if (read_size < file_size) {
+        log_error("Failed to read complete file for key '%s' (read: %zu, expected: %zu)", key,
+                  read_size, file_size);
         free(*buffer);
         free_path(fs_path);
         free(path);
+        fclose(fp);
         return -1;
     }
 
@@ -218,6 +309,8 @@ int cas_get(const cas_registry_t *registry, const char *key, void **buffer, size
     fclose(fp);
     free_path(fs_path);
     free(path);
+
+    log_info("CAS GET: successfully retrieved key '%s', size: %zu bytes", key, read_size);
     return 0;
 }
 
