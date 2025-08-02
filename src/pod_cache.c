@@ -7,15 +7,14 @@
 
 #include "../include/pod_cache.h"
 
-#include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "../include/cas.h"
+#include "../include/clogger.h"
 #include <pthread.h>
-#include "cas.h"
-#include "clogger.h"
 
-#include "hash_func.h"
+#include "../include/hash_func.h"
 
 #define MAX_PARTITIONS 20
 
@@ -32,8 +31,8 @@ pod_cache_t *pod_cache_create(size_t capacity, u_short partitions) {
     pod_cache->total_capacity = capacity;
     pod_cache->cas_registry = cas_create_registry();
 
-    pod_cache->partitions = malloc( partitions * sizeof(lru_cache_t *));
-    for (int i=0 ; i < partitions ; i++) {
+    pod_cache->partitions = malloc(partitions * sizeof(lru_cache_t *));
+    for (int i = 0; i < partitions; i++) {
         pod_cache->partitions[i] = lru_cache_create(single_partition_capacity);
     }
 
@@ -46,26 +45,26 @@ int pod_cache_put(pod_cache_t *cache, const char *key, void *value, size_t value
 
     int put_response = lru_cache_put(cache->partitions[partition_index], key, value, value_size);
     switch (put_response) {
-        case -1:
-            log_error("cannot put key %s in memory, errno = %d", key, -1);
-            return -1;
-        case -900:
-            log_warn("partition %d full, move tail to disk", partition_index);
-            //get pointer to tail element in partition
-            lru_node_t *tail = lru_cache_get_tail_node(cache->partitions[partition_index]);
+    case -1:
+        log_error("cannot put key %s in memory, errno = %d", key, -1);
+        return -1;
+    case -900:
+        log_warn("partition %d full, move tail to disk", partition_index);
+        // get pointer to tail element in partition
+        lru_node_t *tail = lru_cache_get_tail_node(cache->partitions[partition_index]);
 
-            //write it to disk cache
-            char output_path[512];
-            cas_put(cache->cas_registry, tail->key, tail->value, tail->size, output_path);
-            // TODO: inserire nel registry l'output generato, fare una routine perchè è un array dinamico, se non
-            // c'è spazio bisogna fare realloc
-            cas_add_to_registry(cache->cas_registry, output_path);
+        // write it to disk cache
+        char output_path[512];
+        cas_put(cache->cas_registry, tail->key, tail->value, tail->size, output_path);
+        // TODO: inserire nel registry l'output generato, fare una routine perchè è un array
+        // dinamico, se non c'è spazio bisogna fare realloc
+        cas_add_to_registry(cache->cas_registry, output_path);
 
-            // remove from tail
-            lru_cache_remove_tail(cache->partitions[partition_index]);
-            return 0;
-        default:
-            return partition_index;
+        // remove from tail
+        lru_cache_remove_tail(cache->partitions[partition_index]);
+        return 0;
+    default:
+        return partition_index;
     }
 }
 
@@ -76,24 +75,24 @@ int pod_cache_get(pod_cache_t *cache, const char *key, void **out_value, size_t 
     int o_res = lru_cache_get(cache->partitions[partition_index], key, out_value, out_value_size);
 
     switch (o_res) {
-        case -1:
-            log_error("cannot get key %s from cache, errno = %d", key, -1);
-            return -1;
-        case -100:
-            log_debug("key %s not found, searching into disk cache", key);
-            if (cas_get(cache->cas_registry, key, out_value, out_value_size) == 0) {
-                // trovato su disco, sposto nella cache in-memory
-                lru_cache_put(cache->partitions[partition_index], key, *out_value, *out_value_size);
+    case -1:
+        log_error("cannot get key %s from cache, errno = %d", key, -1);
+        return -1;
+    case -100:
+        log_debug("key %s not found, searching into disk cache", key);
+        if (cas_get(cache->cas_registry, key, out_value, out_value_size) == 0) {
+            // trovato su disco, sposto nella cache in-memory
+            lru_cache_put(cache->partitions[partition_index], key, *out_value, *out_value_size);
 
-                // rimuovo da disk cache
-                cas_evict(key, cache->cas_registry);
+            // rimuovo da disk cache
+            cas_evict(key, cache->cas_registry);
 
-                return 0;
-            }
-            log_error("cannot get key %s from disk cache, errno = %d", key, -1);
-            return -1;
-        default:
-            log_info("key %s found", key);
+            return 0;
+        }
+        log_error("cannot get key %s from disk cache, errno = %d", key, -1);
+        return -1;
+    default:
+        log_info("key %s found", key);
     }
 
     return partition_index;
@@ -124,18 +123,19 @@ int pod_cache_evict(pod_cache_t *cache, const char *key) {
     return 0;
 }
 
-
 void pod_cache_destroy(pod_cache_t *pod_cache) {
     if (!pod_cache) return;
 
     cas_registry_destroy(pod_cache->cas_registry);
 
-    for (int i=0 ; i < pod_cache->partition_count ; i++) {
-        lru_cache_destroy(pod_cache->partitions[i]);
-        free(pod_cache);
+    if (pod_cache->partitions) {
+        for (int i = 0; i < pod_cache->partition_count; i++) {
+            lru_cache_destroy(pod_cache->partitions[i]);
+        }
+        free(pod_cache->partitions); // Libera l'array delle partizioni
     }
+
+    free(pod_cache); // Libera la struttura principale alla fine
 }
 
-static int get_partition(uint32_t hash, u_short partition_count) {
-    return hash % partition_count;
-}
+static int get_partition(uint32_t hash, u_short partition_count) { return hash % partition_count; }

@@ -5,20 +5,19 @@
  * License: MIT
  */
 
-#include "lru_cache.h"
+#include "../include/lru_cache.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
-#include "cas.h"
-#include "clogger.h"
-#include "hash_func.h"
-#include "pod_cache.h"
+#include "../include/clogger.h"
+#include "../include/hash_func.h"
 
 /* ======================================================
  * forward declaration static functions
-*  ====================================================== */
+ *  ====================================================== */
 static lru_node_t *create_node(const char *key, size_t value_size, void *value);
 static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node);
 static void add_to_head(lru_cache_t *cache, lru_node_t *lru_node);
@@ -31,8 +30,8 @@ static size_t calculate_hash_table_size(size_t max_bytes_capacity);
 lru_cache_t *lru_cache_create(size_t max_bytes_capacity) {
     lru_cache_t *cache = calloc(1, sizeof(lru_cache_t));
 
-    //create mutex for put
-    if (pthread_mutex_init(&cache->mutex, NULL) !=0 ) {
+    // create mutex for put
+    if (pthread_mutex_init(&cache->mutex, NULL) != 0) {
         return NULL;
     }
     size_t estimated_capacity = calculate_hash_table_size(max_bytes_capacity) + 1;
@@ -59,9 +58,13 @@ int lru_cache_get(lru_cache_t *cache, const char *key, void **value, size_t *val
         if (strcmp(current->key, key) == 0) {
             // item found, read value and move it to the head of linkedlist
             *value = malloc(current->node->size);
+            if (!*value) {
+                return -1; // Errore di allocazione
+            }
             *value_size = current->node->size;
             memcpy(*value, current->node->value, current->node->size);
-            log_debug("GET: retrieved '%.*s' (size: %zu)", (int)*value_size, (char*)*value, *value_size);
+            log_debug("GET: retrieved '%.*s' (size: %zu)", (int)*value_size, (char *)*value,
+                      *value_size);
 
             move_to_head(cache, current->node);
             return 0;
@@ -96,18 +99,15 @@ int lru_cache_evict(lru_cache_t *cache, const char *key) {
                 // Caso 1: Unico elemento nella cache
                 cache->head = NULL;
                 cache->tail = NULL;
-            }
-            else if (node_to_remove == cache->head) {
+            } else if (node_to_remove == cache->head) {
                 // elemento di test
                 cache->head = node_to_remove->next;
                 cache->head->prev = NULL;
-            }
-            else if (node_to_remove == cache->tail) {
+            } else if (node_to_remove == cache->tail) {
                 // elemento di coda
                 cache->tail = node_to_remove->prev;
                 cache->tail->next = NULL;
-            }
-            else {
+            } else {
                 // elemento non testa e non coda
                 node_to_remove->prev->next = node_to_remove->next;
                 node_to_remove->next->prev = node_to_remove->prev;
@@ -138,9 +138,10 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
     if (!cache) return -1;
 
     pthread_mutex_lock(&cache->mutex);
-    //controllo se la memoria è disponibile
-    while ( (cache->current_bytes_size + value_size) >= cache->max_bytes_capacity) {
-        //memoria piena, rimuovo elemento di coda
+
+    // Controllo se la memoria è disponibile
+    if ((cache->current_bytes_size + value_size) >= cache->max_bytes_capacity) {
+        // Memoria piena, ritorna codice speciale ma mantiene il lock
         log_info("memory full, move tail element into disk cache");
         pthread_mutex_unlock(&cache->mutex);
         return -900;
@@ -156,9 +157,14 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
             size_t old_value_size = current->node->size;
 
             current->node->value = malloc(value_size);
+            if (!current->node->value) {
+                pthread_mutex_unlock(&cache->mutex);
+                return -1; // Errore di allocazione
+            }
             current->node->size = value_size;
             memcpy(current->node->value, value, value_size);
-            log_debug("PUT: updating '%.*s' (size: %zu)", (int)value_size, (char*)value, value_size);
+            log_debug("PUT: updating '%.*s' (size: %zu)", (int)value_size, (char *)value,
+                      value_size);
 
             cache->current_bytes_size += (current->node->size - old_value_size);
             // campo aggiornato, va spostato in head
@@ -170,7 +176,19 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
     }
 
     lru_node_t *new_lru_node = create_node(key, value_size, value);
+    if (!new_lru_node) {
+        pthread_mutex_unlock(&cache->mutex);
+        return -1;
+    }
+
     hash_node_t *new_hash_node = create_hash_node(key, new_lru_node);
+    if (!new_hash_node) {
+        free(new_lru_node->key);
+        free(new_lru_node->value);
+        free(new_lru_node);
+        pthread_mutex_unlock(&cache->mutex);
+        return -1;
+    }
     new_hash_node->next = cache->buckets[hash];
     cache->buckets[hash] = new_hash_node;
 
@@ -183,7 +201,7 @@ int lru_cache_put(lru_cache_t *cache, const char *key, void *value, size_t value
 void lru_cache_destroy(lru_cache_t *cache) {
     if (cache == NULL) return;
 
-    // Libera tutti i nodi attraversando solo la lista LRU
+    // Libera tutti i nodi LRU attraversando solo la lista LRU
     lru_node_t *current = cache->head;
     while (current) {
         lru_node_t *next = current->next;
@@ -193,7 +211,21 @@ void lru_cache_destroy(lru_cache_t *cache) {
         current = next;
     }
 
-    // Libera solo l'array di bucket (i nodi sono già stati liberati sopra)
+    // Libera i nodi hash dall'hash table
+    for (size_t i = 0; i < cache->hash_table_size; i++) {
+        hash_node_t *hash_node = cache->buckets[i];
+        while (hash_node) {
+            hash_node_t *next = hash_node->next;
+            free(hash_node->key);
+            free(hash_node);
+            hash_node = next;
+        }
+    }
+
+    // Cleanup mutex
+    pthread_mutex_destroy(&cache->mutex);
+
+    // Libera l'array di bucket e la cache
     free(cache->buckets);
     free(cache);
 }
@@ -204,10 +236,23 @@ void lru_cache_destroy(lru_cache_t *cache) {
 
 static lru_node_t *create_node(const char *key, size_t value_size, void *value) {
     lru_node_t *new_lru_node = calloc(1, sizeof(lru_node_t));
+    if (!new_lru_node) return NULL;
+
     new_lru_node->key = strdup(key);
-    new_lru_node->value = malloc(value_size+1);
+    if (!new_lru_node->key) {
+        free(new_lru_node);
+        return NULL;
+    }
+
+    new_lru_node->value = malloc(value_size); // Rimosso +1 non necessario
+    if (!new_lru_node->value) {
+        free(new_lru_node->key);
+        free(new_lru_node);
+        return NULL;
+    }
+
     memcpy(new_lru_node->value, value, value_size);
-    log_debug("PUT: storing '%.*s' (size: %zu)", (int)value_size, (char*)value, value_size);
+    log_debug("PUT: storing '%.*s' (size: %zu)", (int)value_size, (char *)value, value_size);
     new_lru_node->size = value_size;
     new_lru_node->next = NULL;
     new_lru_node->creation_time = time(NULL);
@@ -217,7 +262,14 @@ static lru_node_t *create_node(const char *key, size_t value_size, void *value) 
 
 static hash_node_t *create_hash_node(const char *key, lru_node_t *lru_node) {
     hash_node_t *new_hash_node = calloc(1, sizeof(hash_node_t));
+    if (!new_hash_node) return NULL;
+
     new_hash_node->key = strdup(key);
+    if (!new_hash_node->key) {
+        free(new_hash_node);
+        return NULL;
+    }
+
     new_hash_node->node = lru_node;
     new_hash_node->next = NULL;
     return new_hash_node;
@@ -256,7 +308,6 @@ int lru_cache_remove_tail(lru_cache_t *cache) {
     } else {
         cache->tail = tail_node->prev;
         cache->tail->next = NULL;
-
     }
 
     uint32_t index = hash_key(tail_node->key, cache->hash_table_size);
@@ -294,14 +345,13 @@ static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
     // caso in cui sono l'unico elemento
     if (lru_node->prev == NULL && lru_node->next == NULL) return;
 
-    //caso in cui sono in coda
+    // caso in cui sono in coda
     if (cache->tail == lru_node) {
         lru_node->prev->next = NULL;
         cache->tail = lru_node->prev;
         lru_node->prev = NULL;
         lru_node->next = cache->head;
-        if (cache->head)
-            cache->head->prev = lru_node;
+        if (cache->head) cache->head->prev = lru_node;
         cache->head = lru_node;
         return;
     }
@@ -311,8 +361,7 @@ static void move_to_head(lru_cache_t *cache, lru_node_t *lru_node) {
     lru_node->next->prev = lru_node->prev;
     lru_node->prev = NULL;
     lru_node->next = cache->head;
-    if (cache->head)
-        cache->head->prev = lru_node;
+    if (cache->head) cache->head->prev = lru_node;
 
     cache->head = lru_node;
 }
@@ -325,7 +374,7 @@ static size_t calculate_hash_table_size(size_t max_bytes_capacity) {
     size_t target_size = estimated_elements / 0.75;
 
     // Arrotonda alla prossima potenza di 2 per performance
-    size_t size = 16; // minimo
+    size_t size = 16;                            // minimo
     while (size < target_size && size < 65536) { // max 64K
         size <<= 1;
     }

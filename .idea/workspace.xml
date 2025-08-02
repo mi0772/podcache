@@ -30,111 +30,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fe32b166-9206-4577-8518-5f7c2b7b90fd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/compiler_depend.internal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/query/cache-v2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/query/cmakeFiles-v1" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/query/codemodel-v2" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/query/toolchains-v1" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/cache-v2-4ff7d09b56c8ad5dfe8e.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/cmakeFiles-v1-65d09a2997922638773b.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/codemodel-v2-e03c31835580c6675f68.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/directory-.-Debug-f5ebdc15457944623624.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/directory-tests-Debug-b01f6abb0ab61427ef3b.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/index-2025-08-01T20-36-05-0641.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/target-podcache-Debug-b1ffbd323500bb095a05.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/target-podcache_lib-Debug-a6bbfcc5f280af39f057.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/target-test_cas-Debug-1ffa6d657592d142ae93.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/toolchains-v1-a7d2d1e18f8c613057c5.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.31.6/CMakeCCompiler.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.31.6/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.31.6/CMakeSystem.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.31.6/CompilerIdC/CMakeCCompilerId.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.31.6/CompilerIdC/CMakeCCompilerId.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeConfigureLog.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-Debug-log.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-environment.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/cmake.check_cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache.dir/src/cas.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache.dir/src/clogger.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache.dir/src/hash_func.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache.dir/src/lru_cache.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache.dir/src/main.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache.dir/src/resp_parser.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache.dir/src/server_tcp.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache.dir/src/toml.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache_lib.dir/src/cas.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache_lib.dir/src/clogger.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache_lib.dir/src/hash_func.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache_lib.dir/src/lru_cache.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache_lib.dir/src/pod_cache.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache_lib.dir/src/resp_parser.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/podcache_lib.dir/src/toml.c.o" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/rules.ninja" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CTestTestfile.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/build.ninja" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/libpodcache_lib.a" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/podcache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/podcache.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/tests/CTestTestfile.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmake-build-debug/tests/cmake_install.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/Makefile2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/cmake_clean.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/cmake_clean.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/compiler_depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/compiler_depend.internal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/compiler_depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/compiler_depend.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/progress.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/progress.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/src/cas.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/src/cas.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/src/lru_cache.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/src/lru_cache.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/src/server_tcp.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache.dir/src/server_tcp.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/cmake_clean.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/cmake_clean.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/compiler_depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/compiler_depend.internal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/compiler_depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/compiler_depend.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/progress.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/progress.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/src/cas.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/src/cas.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/src/lru_cache.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/src/lru_cache.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/src/pod_cache.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/podcache_lib.dir/src/pod_cache.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/CMakeFiles/progress.marks" beforeDir="false" afterPath="$PROJECT_DIR$/build/CMakeFiles/progress.marks" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/build/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/libpodcache_lib.a" beforeDir="false" afterPath="$PROJECT_DIR$/build/libpodcache_lib.a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/podcache" beforeDir="false" afterPath="$PROJECT_DIR$/build/podcache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/CMakeFiles/progress.marks" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/CMakeFiles/progress.marks" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/cmake_clean.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/cmake_clean.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/compiler_depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/compiler_depend.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/progress.make" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/CMakeFiles/test_cas.dir/progress.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/CTestTestfile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/CTestTestfile.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tests/test_cas" beforeDir="false" afterPath="$PROJECT_DIR$/build/tests/test_cas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/b64.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/lru_cache.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/lru_cache.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/pod_cache.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/pod_cache.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/resp_parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/resp_parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/b64.c" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cas.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/cas.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lru_cache.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/lru_cache.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pod_cache.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/pod_cache.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server_tcp.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/server_tcp.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/CMakeLists.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,18 +44,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "mi0772"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;mi0772&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/mi0772/podcache.git",
-    "accountId": "ba530344-876a-4d96-b524-9bbec185a88f"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/mi0772/podcache.git&quot;,
+    &quot;accountId&quot;: &quot;ba530344-876a-4d96-b524-9bbec185a88f&quot;
   }
-}]]></component>
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
@@ -181,7 +80,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "CMake Application.podcache.executor": "Run",
+    "CMake Application.podcache.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.RadMigrateCodeStyle": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -203,9 +102,9 @@
   }
 }]]></component>
   <component name="RunManager" selected="CMake Application.podcache">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="podcache" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="PodCache" TARGET_NAME="podcache" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="PodCache" RUN_TARGET_NAME="podcache">
@@ -243,7 +142,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1754080558617</updated>
-      <workItem from="1754080560381" duration="902000" />
+      <workItem from="1754080560381" duration="1066000" />
+      <workItem from="1754139247783" duration="1422000" />
     </task>
     <servers />
   </component>
