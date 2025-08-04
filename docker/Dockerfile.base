@@ -23,10 +23,9 @@ RUN cmake -B build -DCMAKE_BUILD_TYPE=Release && \
 # ========================================
 FROM ubuntu:22.04 AS podcache-base
 
-# Install runtime dependencies (solo le librerie, non i dev headers)
+# Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     libc6 \
-    libssl3 \
     supervisor \
     curl \
     ca-certificates \
@@ -50,4 +49,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:6379/health || exit 1
 
 EXPOSE 6379
+
+# This image is designed to be used as base in multi-stage builds
+# It provides PodCache binary and configuration
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
