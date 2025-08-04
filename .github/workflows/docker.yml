@@ -45,14 +45,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Example Spring Integration
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile.example
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/podcache-spring-example:${{ github.ref_name }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # - name: Build and push Example Spring Integration
+          #   uses: docker/build-push-action@v5
+          #   with:
+          #     context: .
+          #     file: ./docker/Dockerfile.example
+          #     platforms: linux/amd64,linux/arm64
+          #     push: true
+          #     tags: ${{ secrets.DOCKER_USERNAME }}/podcache-spring-example:${{ github.ref_name }}
+          #     labels: ${{ steps.meta.outputs.labels }}
+          #     cache-from: type=gha
+          #     cache-to: type=gha,mode=max
