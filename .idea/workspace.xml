@@ -29,7 +29,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fe32b166-9206-4577-8518-5f7c2b7b90fd" name="Changes" comment="" />
+    <list default="true" id="fe32b166-9206-4577-8518-5f7c2b7b90fd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.github/ISSUE_TEMPLATE/bug_report.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.github/dependabot.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.github/workflows/ci.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.github/workflows/docker.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -69,6 +77,9 @@
   &quot;associatedIndex&quot;: 1
 }</component>
   <component name="ProjectId" id="30hX0xrAhHcENoY8IeiNl1TjZEq" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -138,7 +149,7 @@
       <option name="presentableId" value="Default" />
       <updated>1754080558617</updated>
       <workItem from="1754080560381" duration="1066000" />
-      <workItem from="1754139247783" duration="3520000" />
+      <workItem from="1754139247783" duration="6941000" />
     </task>
     <servers />
   </component>

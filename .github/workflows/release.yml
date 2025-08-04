@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger su tag come v1.0.0, v2.1.0, etc.
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        working-directory: build
+        run: ctest --build-config Release --verbose
+
+      - name: Prepare release package
+        run: |
+          mkdir -p release
+          cp build/podcache release/
+          cp build/tests/test_hash_table release/
+          cp README.md release/
+          cp -r include release/
+          echo "PodCache Server - Linux x64" > release/VERSION.txt
+          echo "Build: $(date -u)" >> release/VERSION.txt
+          echo "Commit: ${{ github.sha }}" >> release/VERSION.txt
+          cd release && tar -czf ../podcache-linux-x64.tar.gz *
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: podcache-linux-x64.tar.gz
+          name: PodCache ${{ github.ref_name }}
+          body: |
+            ## PodCache Server ${{ github.ref_name }}
+            
+            **Linux x64 Build**
+            - Ottimizzato per container Linux
+            - Include binario principale e test
+            - Header files inclusi per sviluppo
+            
+            ### Download:
+            - `podcache-linux-x64.tar.gz` - Binario completo
+            
+            ### Utilizzo:
+            ```bash
+            tar -xzf podcache-linux-x64.tar.gz
+            cd release
+            ./podcache
+            ```
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
