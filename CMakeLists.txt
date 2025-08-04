@@ -4,26 +4,8 @@ project(PodCache C)
 set(CMAKE_C_STANDARD 99)
 
 # Configurazione specifica per piattaforma
-if(APPLE)
-    set(OPENSSL_ROOT_DIR
-            /opt/homebrew/opt/openssl@3
-            /opt/homebrew/opt/openssl
-            /usr/local/opt/openssl@3
-            /usr/local/opt/openssl
-    )
-elseif(UNIX AND NOT APPLE)
-
-endif()
-
-find_package(OpenSSL REQUIRED)
-
-if(OpenSSL_FOUND)
-    message(STATUS "OpenSSL found: ${OPENSSL_VERSION}")
-    message(STATUS "OpenSSL include: ${OPENSSL_INCLUDE_DIR}")
-    message(STATUS "OpenSSL libraries: ${OPENSSL_LIBRARIES}")
-else()
-    message(FATAL_ERROR "OpenSSL not found!")
-endif()
+# Using standalone SHA-256 implementation (no OpenSSL dependency)
+message(STATUS "Using standalone SHA-256 implementation (no OpenSSL)")
 
 # Abilita i test
 enable_testing()
@@ -34,7 +16,7 @@ add_library(podcache_lib
         include/toml.h
         src/pod_cache.c
         src/lru_cache.c
-        src/hash_func.c
+        src/hash_func_nossl.c
         include/hash_func.h
         src/cas.c
         include/cas.h
@@ -45,7 +27,6 @@ add_library(podcache_lib
 )
 
 target_include_directories(podcache_lib PUBLIC include)
-target_link_libraries(podcache_lib OpenSSL::SSL OpenSSL::Crypto)
 
 # Eseguibile principale
 add_executable(podcache src/main.c
@@ -56,7 +37,7 @@ add_executable(podcache src/main.c
 
         src/lru_cache.c
         include/lru_cache.h
-        src/hash_func.c
+        src/hash_func_nossl.c
         include/hash_func.h
         src/cas.c
         include/cas.h

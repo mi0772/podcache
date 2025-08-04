@@ -49,7 +49,6 @@ PodCache uses a three-tier caching architecture:
 ### Prerequisites
 
 - CMake 3.16 or higher
-- OpenSSL 3.x
 - GCC or Clang compiler
 - netcat (for testing)
 
@@ -64,7 +63,7 @@ cd podcache
 mkdir -p build
 cd build
 
-# Configure and build
+# Build the project
 cmake ..
 make
 
@@ -74,11 +73,8 @@ make
 ### macOS Installation
 
 ```bash
-# Install OpenSSL via Homebrew
-brew install openssl@3
-
-# Build with OpenSSL path
-cmake -DOPENSSL_ROOT_DIR=/opt/homebrew/opt/openssl@3 ..
+# Build the project (same as Linux)
+cmake ..
 make
 ```
 
@@ -328,7 +324,7 @@ If you need to customize PodCache, you can build your own base image:
 # Build stage
 FROM ubuntu:22.04 AS builder
 RUN apt-get update && apt-get install -y \
-    build-essential cmake libssl-dev pkg-config
+    build-essential cmake pkg-config
 WORKDIR /app
 COPY . .
 RUN cmake -B build -DCMAKE_BUILD_TYPE=Release && \
