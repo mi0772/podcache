@@ -1,4 +1,9 @@
-# ===# Install build dependencies
+# ========================================
+# PodCache Base Image per Multi-Stage Build
+# ========================================
+FROM ubuntu:22.04 AS builder
+
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -9,24 +14,6 @@ WORKDIR /app
 COPY . .
 
 # Build PodCache without OpenSSL dependency
-RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL=OFF && \
-    cmake --build build --config Release=======================
-# PodCache Base Image per Multi-Stage Build
-# ========================================
-FROM ubuntu:22.04 AS builder
-
-# Install build dependencies (non runtime!)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    libssl-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-COPY . .
-
-# Build PodCache
 RUN cmake -B build -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build --config Release
 
@@ -35,7 +22,7 @@ RUN cmake -B build -DCMAKE_BUILD_TYPE=Release && \
 # ========================================
 FROM ubuntu:22.04 AS podcache-base
 
-# Install runtime dependencies (rimosso libssl3!)
+# Install runtime dependencies (without libssl3!)
 RUN apt-get update && apt-get install -y \
     libc6 \
     supervisor \
