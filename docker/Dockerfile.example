@@ -1,7 +1,7 @@
 # ========================================
 # Esempio: Come usare PodCache Base Image
 # ========================================
-FROM ghcr.io/mi0772/podcache-base:latest AS podcache
+FROM mi0772/podcache-base:latest AS podcache
 FROM openjdk:17-jdk-slim AS spring-app
 
 # Install supervisor and runtime deps
