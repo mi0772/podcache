@@ -3,7 +3,7 @@
 # ========================================
 FROM ubuntu:22.04 AS builder
 
-# Install build dependencies
+# Install build dependencies (non runtime!)
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -23,9 +23,10 @@ RUN cmake -B build -DCMAKE_BUILD_TYPE=Release && \
 # ========================================
 FROM ubuntu:22.04 AS podcache-base
 
-# Install runtime dependencies
+# Install runtime dependencies (aggiungi libssl3!)
 RUN apt-get update && apt-get install -y \
     libc6 \
+    libssl3 \
     supervisor \
     curl \
     ca-certificates \
