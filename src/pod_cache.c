@@ -12,7 +12,6 @@
 
 #include "../include/cas.h"
 #include "../include/clogger.h"
-#include <pthread.h>
 
 #include "../include/hash_func.h"
 
