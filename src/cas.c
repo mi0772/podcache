@@ -84,7 +84,7 @@ int cas_put(const cas_registry_t *registry, const char *key, void *value, size_t
     log_debug("CAS PUT: created directory structure at: %s", output_path);
 
     // ho il path, ci devo scrivere dentro il contenuto di value
-    char complete_path[512];
+    char complete_path[PATH_MAX];
     sprintf(complete_path, "%s/%s", output_path, "value.dat");
     FILE *fp = fopen(complete_path, "wb");
     if (!fp) {
@@ -132,7 +132,7 @@ int cas_evict(const char *key, cas_registry_t *registry) {
     log_debug("CAS EVICT: attempting to remove key '%s'", key);
 
     char hash[65] = {'\0'};
-    char path[512] = {'\0'};
+    char path[PATH_MAX] = {'\0'};
 
     sha256_string(key, hash);
     fs_path_t *fs_path = create_fs_path(hash);
@@ -326,7 +326,7 @@ static int cas_create_directory(const cas_registry_t *registry, const char *key,
     sha256_string(key, hash);
     fs_path_t *fs_path = create_fs_path(hash);
 
-    char path[512] = {'\0'};
+    char path[PATH_MAX] = {'\0'};
     sprintf(path, "%s/%s/%s/%s/%s", registry->base_path, fs_path->p[0], fs_path->p[1],
             fs_path->p[2], fs_path->p[3]);
     struct stat st;
@@ -356,7 +356,7 @@ static int cas_create_directory(const cas_registry_t *registry, const char *key,
 }
 
 static int cas_remove(const cas_registry_t *registry, fs_path_t *fs_path) {
-    char path[512];
+    char path[PATH_MAX];
 
     sprintf(path, "%s/%s/%s/%s/%s/value.dat", registry->base_path, fs_path->p[0], fs_path->p[1],
             fs_path->p[2], fs_path->p[3]);

@@ -1,0 +1,53 @@
+# ========================================
+# PodCache Base Image per Multi-Stage Build
+# ========================================
+FROM ubuntu:22.04 AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . .
+
+# Build PodCache
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build --config Release
+
+# ========================================
+# Runtime Base Image
+# ========================================
+FROM ubuntu:22.04 AS podcache-base
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libc6 \
+    supervisor \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -r -s /bin/false podcache
+
+# Copy PodCache binary from builder
+COPY --from=builder /app/build/podcache /usr/local/bin/podcache
+RUN chmod +x /usr/local/bin/podcache
+
+# Setup directories and permissions
+RUN mkdir -p /var/lib/podcache /etc/podcache /var/log && \
+    chown podcache:podcache /var/lib/podcache
+
+# Default configuration
+COPY docker/podcache.conf /etc/podcache/podcache.conf
+COPY docker/supervisord-base.conf /etc/supervisor/conf.d/podcache.conf
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:6379/health || exit 1
+
+EXPOSE 6379
+
+# This image is designed to be used as base in multi-stage builds
+# It provides PodCache binary and configuration
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
