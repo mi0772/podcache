@@ -37,4 +37,3 @@ jobs:
           name: podcache-linux-${{ matrix.build_type }}
           path: |
             build/podcache
-            build/tests/test_hash_table

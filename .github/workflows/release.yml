@@ -30,7 +30,6 @@ jobs:
         run: |
           mkdir -p release
           cp build/podcache release/
-          cp build/tests/test_hash_table release/
           cp README.md release/
           cp -r include release/
           echo "PodCache Server - Linux x64" > release/VERSION.txt
