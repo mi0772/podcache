@@ -1,6 +1,12 @@
 # PodCache
 
-PodCache is a high-performance, multi-partition in-memory cache server with automatic disk overflow, designed for containerized applications. It implements the Redis RESP protocol and provides transparent hybrid storage (memory + disk) with LRU eviction policies.
+**Stop building your own cache layer. Start shipping features.**
+
+PodCache is a drop-in, high-performance local caching server that eliminates the need to implement custom caching solutions in your applications. Simply integrate it as a sidecar container and get enterprise-grade caching with zero development overhead.
+
+**Redis-compatible protocol** means your existing Redis clients work immediately - no code changes required. When you're ready to scale, switch to Redis with a simple configuration change.
+
+**Built for containers.** Optimized for microservices with multi-partition in-memory storage, automatic disk overflow, and intelligent LRU eviction. Your application gets blazing-fast local cache performance without the complexity of distributed caching.
 
 ## Features
 
@@ -442,7 +448,7 @@ podcache/
 
 ## License
 
-MIT License - see LICENSE file for details
+GNU Affero General Public License v3.0 (AGPL-3.0) - see LICENSE file for details
 
 ## Author
 
