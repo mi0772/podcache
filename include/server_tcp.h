@@ -2,7 +2,7 @@
  * Project: PodCache
  * Author: Carlo Di Giuseppe
  * Date: 18/07/25
- * License: MIT
+ * License: AGPL 3
  */
  
 #ifndef SERVER_TCP_H

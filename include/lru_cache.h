@@ -2,7 +2,7 @@
  * Project: PodCache
  * Author: Carlo Di Giuseppe
  * Date: 16/07/25
- * License: MIT
+ * License: AGPL 3
  */
  
 #ifndef LRU_CACHE_H

@@ -2,7 +2,7 @@
  * Project: PodCache
  * Author: Carlo Di Giuseppe
  * Date: 22/07/25
- * License: MIT
+ * License: AGPL 3
  */
 #include <stdbool.h>
 #include <stdio.h>
