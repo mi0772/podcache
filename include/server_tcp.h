@@ -13,7 +13,7 @@
 #define CLIENT_ID_SIZE 64
 #define MAX_ERROR_MSG 256
 
-#include <arm/signal.h>
+#include <signal.h>
 #include <netinet/in.h>
 
 #include "pod_cache.h"

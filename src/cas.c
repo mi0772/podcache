@@ -261,7 +261,7 @@ int cas_get(const cas_registry_t *registry, const char *key, void **buffer, size
     sha256_string(key, hash);
     fs_path_t *fs_path = create_fs_path(hash);
     char *path = get_path(registry, fs_path);
-    char complete_path[512];
+    char complete_path[PATH_MAX];
     sprintf(complete_path, "%s/%s", path, "value.dat");
 
     log_debug("CAS GET: looking for file at: %s", complete_path);
