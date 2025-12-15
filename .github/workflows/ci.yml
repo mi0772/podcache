@@ -32,7 +32,7 @@ jobs:
         run: ctest --build-config ${{ matrix.build_type }} --verbose
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: podcache-linux-${{ matrix.build_type }}
           path: |
